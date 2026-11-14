@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+  <title>Setup - Catalog Maker</title>
+
+  <style>
+    :root {
+      --bg-color: #ffffff;
+      --surface-color: #ffffff;
+      --text-main: #000000;
+      --text-sub: #666666;
+      --border: #e0e0e0;
+      --primary: #2874f0;
+      --primary-hover: #1e5bb8;
+      --input-bg: #f1f3f6;
+      --dot-inactive: #cccccc;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #121212;
+        --surface-color: #1e1e1e;
+        --text-main: #ffffff;
+        --text-sub: #a0a0a0;
+        --border: #333333;
+        --input-bg: #2a2a2a;
+        --dot-inactive: #444444;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none;
+    }
+
+    input {
+      -webkit-touch-callout: default;
+      user-select: auto;
+    }
+
+    body, html {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      height: 100vh;
+      height: 100dvh;
+      overflow: hidden;
+    }
+
+    /* Outer Wrapper */
+    .app-viewport {
+      width: 100%;
+      height: 100%;
+      max-width: 600px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* Swipeable Carousel Container */
+    .carousel-track {
+      display: flex;
+      flex: 1;
+      width: 100%;
+      height: 100%;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; 
+    }
+
+    .carousel-track::-webkit-scrollbar {
+      display: none; 
+    }
+
+    /* Individual Slide */
+    .slide {
+      flex: 0 0 100%;
+      width: 100%;
+      height: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      display: flex;
+      flex-direction: column;
+      padding: 36px 24px 90px 24px; 
+      overflow-y: auto;
+      position: relative;
+    }
+
+    /* Slide Content Centering */
+    .slide-intro {
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+    }
+
+    .hero-illustration {
+      width: 220px;
+      height: 220px;
+      margin-bottom: 32px;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+    }
+
+    h1.slide-title {
+      font-size: 26px;
+      font-weight: 800;
+      margin-bottom: 12px;
+      letter-spacing: -0.5px;
+    }
+
+    p.slide-subtitle {
+      color: var(--text-sub);
+      font-size: 15px;
+      line-height: 1.5;
+      max-width: 380px;
+      margin-bottom: 24px;
+    }
+
+    /* Bottom Navigation Bar */
+    .bottom-nav-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 16px 24px calc(16px + env(safe-area-inset-bottom, 0px)) 24px;
+      background: linear-gradient(to top, var(--bg-color) 85%, rgba(0,0,0,0));
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      z-index: 10;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    .dots-container {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 4px;
+      background-color: var(--dot-inactive);
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .dot.active {
+      width: 24px;
+      background-color: var(--primary);
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 14px 24px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      gap: 8px;
+    }
+
+    .btn:active { transform: scale(0.97); }
+
+    .btn-primary {
+      background-color: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 4px 12px rgba(40, 116, 240, 0.25);
+    }
+    .btn-primary:hover { background-color: var(--primary-hover); }
+
+    .nav-arrow-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--input-bg);
+      border: none;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .nav-arrow-btn:active { background: var(--border); }
+
+    /* Form UI Elements */
+    .setup-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 32px;
+      background: var(--input-bg);
+      padding: 16px 20px;
+      border-radius: 16px;
+    }
+
+    .profile-dp {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: var(--surface-color);
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    .section-title {
+      font-size: 16px;
+      margin: 16px 0 14px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .form-group {
+      position: relative;
+      margin-bottom: 16px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 20px 16px 8px;
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      background: var(--surface-color);
+      color: var(--text-main);
+      font-size: 15px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus { border-color: var(--primary); }
+
+    .form-label {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      font-size: 15px;
+      color: var(--text-sub);
+      transition: 0.2s ease all;
+      pointer-events: none;
+    }
+
+    .form-input:focus ~ .form-label,
+    .form-input:not(:placeholder-shown) ~ .form-label {
+      top: 6px;
+      font-size: 11px;
+      color: var(--primary);
+    }
+    .form-input:not(:focus):not(:placeholder-shown) ~ .form-label {
+      color: var(--text-sub);
+    }
+
+    .error-text { color: #d32f2f; font-size: 13px; margin: 8px 0; display: none; text-align: center; }
+
+    .loader {
+      display: none;
+      width: 18px;
+      height: 18px;
+      border: 2px solid transparent;
+      border-radius: 50%;
+      border-top-color: currentColor;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div class="app-viewport">
+    <div class="carousel-track" id="carousel-track">
+
+      <!-- Slide 1: Welcome -->
+      <section class="slide slide-intro" id="slide-0">
+        <svg class="hero-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="80" fill="var(--input-bg)" />
+          <rect x="65" y="55" width="70" height="90" rx="8" fill="var(--primary)" opacity="0.15" stroke="var(--primary)" stroke-width="4"/>
+          <line x1="80" y1="80" x2="120" y2="80" stroke="var(--primary)" stroke-width="4" stroke-linecap="round"/>
+          <line x1="80" y1="100" x2="120" y2="100" stroke="var(--primary)" stroke-width="4" stroke-linecap="round"/>
+          <line x1="80" y1="120" x2="105" y2="120" stroke="var(--primary)" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <h1 class="slide-title">Digital Catalog Maker</h1>
+        <p class="slide-subtitle">Easily add products, organize images, and track quantities in one centralized dashboard.</p>
+      </section>
+
+      <!-- Slide 2: PDF Feature -->
+      <section class="slide slide-intro" id="slide-1">
+        <svg class="hero-illustration" viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="100" cy="100" r="80" fill="var(--input-bg)" />
+          <path d="M100 40C72.4 40 50 62.4 50 90C50 127.5 100 170 100 170C100 170 150 127.5 150 90C150 62.4 127.6 40 100 40Z" fill="var(--primary)" opacity="0.15" stroke="var(--primary)" stroke-width="4"/>
+          <path d="M85 95L95 105L120 75" stroke="var(--primary)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <h1 class="slide-title">Export for Suppliers</h1>
+        <p class="slide-subtitle">Generate professional, formatted PDF documents of your catalog instantly to send orders to your suppliers.</p>
+      </section>
+
+      <!-- Slide 3: Setup Form (Name Only) -->
+      <section class="slide" id="slide-2">
+        <div class="setup-header">
+          <img id="setup-dp" class="profile-dp" src="" alt="Profile">
+          <div>
+            <h2 id="setup-name" style="font-size: 18px; font-weight: 700;">Welcome</h2>
+            <p style="color: var(--text-sub); font-size: 13px;">Set your business or profile name</p>
+          </div>
+        </div>
+
+        <h3 class="section-title">Account Details</h3>
+        <div class="form-group">
+          <input type="text" id="f-name" class="form-input" placeholder=" ">
+          <label class="form-label">Full Name or Business Name</label>
+        </div>
+
+        <p class="error-text" id="setup-error-msg"></p>
+
+        <button class="btn btn-primary" id="proceed-btn" style="width: 100%; margin-top: 12px; padding: 16px;">
+          <span id="proceed-text">Save & Start Creating</span>
+          <div class="loader" id="proceed-loader"></div>
+        </button>
+      </section>
+
+    </div>
+
+    <!-- Fixed Bottom Control Bar -->
+    <div class="bottom-nav-bar">
+      <!-- Skip button -->
+      <button id="skip-setup-btn" style="position: absolute; left: 24px; z-index: 20; background: transparent; border: none; color: var(--text-sub); font-weight: 600; font-size: 15px; cursor: pointer; padding: 10px; text-decoration: underline;">Skip</button>
+
+      <button class="nav-arrow-btn" id="prev-btn" title="Previous">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M15 18l-6-6 6-6"/></svg>
+      </button>
+
+      <div class="dots-container" id="dots-container">
+        <div class="dot active" data-index="0"></div>
+        <div class="dot" data-index="1"></div>
+        <div class="dot" data-index="2"></div>
+      </div>
+
+      <button class="btn btn-primary" id="next-action-btn">
+        <span id="next-action-text">Next</span>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 18l6-6-6-6"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { auth, db } from '../config.js';
+    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // DOM Elements
+    const track = document.getElementById('carousel-track');
+    const dots = document.querySelectorAll('.dot');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextActionBtn = document.getElementById('next-action-btn');
+    const nextActionText = document.getElementById('next-action-text');
+    const skipSetupBtn = document.getElementById('skip-setup-btn');
+
+    // Setup Form UI
+    const setupName = document.getElementById('setup-name');
+    const setupDp = document.getElementById('setup-dp');
+    const fName = document.getElementById('f-name');
+    const proceedBtn = document.getElementById('proceed-btn');
+    const setupError = document.getElementById('setup-error-msg');
+
+    let currentUser = null;
+    let currentSlide = 0;
+
+    // 1. Auth State & Firestore Check
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+
+        try {
+          const userRef = doc(db, 'users', user.uid);
+          const userSnap = await getDoc(userRef);
+
+          if (userSnap.exists()) {
+            try {
+              localStorage.setItem('aarvi_setup_complete', 'true');
+            } catch (e) {
+              console.warn("localStorage writing blocked:", e);
+            }
+            window.location.replace("home.html");
+            return;
+          }
+        } catch (error) {
+          console.error("Firestore background verification error:", error);
+        }
+
+        // Pre-fill setup form profile info
+        setupName.innerText = user.displayName || 'Welcome';
+        fName.value = user.displayName || '';
+        setupDp.src = user.photoURL || '../images/icon.png';
+
+      } else {
+        window.location.replace("login.html");
+      }
+    });
+
+    // 2. Carousel Scroll & Navigation Engine
+    function updateCarouselState(index) {
+      currentSlide = index;
+
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === currentSlide);
+      });
+
+      prevBtn.style.visibility = currentSlide === 0 ? 'hidden' : 'visible';
+
+      if (currentSlide === 2) {
+        nextActionBtn.style.display = 'none'; 
+      } else {
+        nextActionBtn.style.display = 'inline-flex';
+        nextActionText.innerText = currentSlide === 1 ? 'Start Setup' : 'Next';
+      }
+
+      if (skipSetupBtn) {
+        skipSetupBtn.style.display = currentSlide === 0 ? 'block' : 'none';
+      }
+    }
+
+    function scrollToIndex(index) {
+      const slideWidth = track.clientWidth;
+      track.scrollTo({ left: slideWidth * index, behavior: 'smooth' });
+    }
+
+    track.addEventListener('scroll', () => {
+      const slideWidth = track.clientWidth;
+      if (slideWidth > 0) {
+        const index = Math.round(track.scrollLeft / slideWidth);
+        if (index !== currentSlide) {
+          updateCarouselState(index);
+        }
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentSlide > 0) scrollToIndex(currentSlide - 1);
+    });
+
+    nextActionBtn.addEventListener('click', () => {
+      if (currentSlide < 2) scrollToIndex(currentSlide + 1);
+    });
+
+    dots.forEach((dot) => {
+      dot.addEventListener('click', (e) => {
+        const targetIndex = parseInt(e.target.getAttribute('data-index'), 10);
+        scrollToIndex(targetIndex);
+      });
+    });
+
+    updateCarouselState(0);
+
+    // Live Data Binding for Form Name Input
+    fName.addEventListener('input', (e) => {
+      setupName.innerText = e.target.value.trim() || 'Welcome';
+    });
+
+    // 3. Skip Setup Handler 
+    if (skipSetupBtn) {
+      skipSetupBtn.addEventListener('click', async () => {
+        if (navigator.vibrate) navigator.vibrate(40);
+        if (!currentUser) return;
+
+        skipSetupBtn.innerText = "Skipping...";
+        skipSetupBtn.style.pointerEvents = 'none';
+
+        try {
+          await setDoc(doc(db, 'users', currentUser.uid), {
+            name: currentUser.displayName || 'User',
+            email: currentUser.email || '',
+            photoURL: currentUser.photoURL || '',
+            createdAt: new Date().toISOString()
+          });
+
+          try { localStorage.setItem('aarvi_setup_complete', 'true'); } catch (e) {}
+          window.location.replace("home.html");
+
+        } catch (error) {
+          console.error("Firestore skip setup write error:", error);
+          alert("Failed to skip setup. Please try again.");
+          skipSetupBtn.innerText = "Skip";
+          skipSetupBtn.style.pointerEvents = 'auto';
+        }
+      });
+    }
+
+    // 4. Final Submission & Firestore Setup Document Write
+    proceedBtn.addEventListener('click', async () => {
+      if (navigator.vibrate) navigator.vibrate(40);
+      setupError.style.display = 'none';
+
+      const name = fName.value.trim();
+
+      if (!name) {
+        setupError.innerText = "Please provide your name or business name.";
+        setupError.style.display = 'block';
+        return;
+      }
+
+      proceedBtn.style.pointerEvents = 'none';
+      document.getElementById('proceed-text').style.display = 'none';
+      document.getElementById('proceed-loader').style.display = 'block';
+
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid), {
+          name: name,
+          email: currentUser.email,
+          photoURL: currentUser.photoURL,
+          createdAt: new Date().toISOString()
+        });
+
+        try { localStorage.setItem('aarvi_setup_complete', 'true'); } catch (e) {}
+        window.location.replace("home.html");
+
+      } catch (error) {
+        console.error("Firestore write error:", error);
+        setupError.innerText = "Failed to save profile. Please check connection and try again.";
+        setupError.style.display = 'block';
+        proceedBtn.style.pointerEvents = 'auto';
+        document.getElementById('proceed-text').style.display = 'block';
+        document.getElementById('proceed-loader').style.display = 'none';
+      }
+    });
+  </script>
+</body>
+</html>
