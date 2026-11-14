@@ -70,7 +70,7 @@
     .empty-search-state .desc { font-size: 15px; font-weight: 500; max-width: 260px; line-height: 1.4; }
 
     /* Product Cards (List View) */
-    .prod-card { background: var(--surface-color); border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); overflow: hidden; flex-shrink: 0; }
+    .prod-card { background: var(--surface-color); border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); overflow: hidden; flex-shrink: 0; }
     .prod-card:active { transform: scale(0.97); background: var(--bg-color); }
     
     .prod-card-inner { display: flex; align-items: center; gap: 16px; padding: 12px 16px; pointer-events: auto; }
@@ -189,15 +189,12 @@
     .detail-price-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
     .detail-price { font-size: 24px; font-weight: 800; color: var(--primary); }
     .detail-brand { font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; background: var(--bg-color); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); }
+    .detail-code { font-size: 14px; color: var(--text-sub); font-weight: 700; background: var(--bg-color); padding: 6px 12px; border-radius: 8px; width: max-content; border: 1px solid var(--border); margin-top: 8px; }
     
     .detail-cat-tag { margin-top: 8px; font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; display: flex; align-items: center; gap: 6px; padding: 8px 12px; background: var(--bg-color); border-radius: 8px; width: max-content; border: 1px solid var(--border); }
     .detail-cat-tag svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2.5; }
 
     .detail-desc { font-size: 15px; color: var(--text-sub); line-height: 1.6; white-space: pre-wrap; font-weight: 500; margin-top: 12px; }
-    
-    .action-row { padding: 20px 24px; border-top: 1px solid var(--border); padding-bottom: max(20px, env(safe-area-inset-bottom)); flex-shrink: 0; }
-    .btn-outline { width: 100%; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: 2px solid var(--border); background: transparent; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
-    .btn-outline:active { transform: scale(0.97); background: var(--bg-color); }
 
     /* Full Screen Image Zoom (Layer 6000) */
     .zoom-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 6000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; }
@@ -378,6 +375,7 @@
             <div class="detail-price" id="pd-price">₹0</div>
             <div class="detail-brand" id="pd-brand" style="display:none;"></div>
           </div>
+          <div class="detail-code" id="pd-code" style="display:none;">...</div>
           <div class="detail-cat-tag" id="pd-cat-tag">
              <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 014.5 9.75h15A2.25 2.25 0 0121.75 12v.75m-8.69-6.44l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"/></svg>
              <span id="pd-cat-name">Category Name</span>
@@ -397,9 +395,6 @@
       <img id="zoom-img" src="">
     </div>
   </div>
-
-  <!-- Dialog Overlay -->
-  <div class="dialog-overlay" id="dialog-overlay"></div>
 
   <!-- Firebase Index Helper Dialog -->
   <div class="dialog-box" id="dialog-index">
@@ -426,6 +421,14 @@
       lastProdDoc: null,
       hasMoreProd: true,
       catCache: {} // Store category names for badges
+    };
+
+    const getProductImage = (prod) => {
+      if (!prod) return '';
+      if (prod.imageUrl) return prod.imageUrl;
+      if (prod.images && prod.images.thumbnail) return prod.images.thumbnail;
+      if (prod.image) return prod.image;
+      return '';
     };
 
     const ui = {
@@ -471,10 +474,14 @@
     function closeModalUI(modalId) {
       const el = document.getElementById(modalId);
       if(el) el.classList.remove('active');
+      
       const hasSheets = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('bottom-sheet'));
       if(!hasSheets) document.getElementById('main-overlay').classList.remove('active');
+      
       const hasDialogs = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('dialog-box'));
       if(!hasDialogs) ui.dialogOverlay.classList.remove('active');
+
+      if(modalId === 'modal-camera') stopCamera();
     }
 
     window.addEventListener('popstate', (e) => {
@@ -589,11 +596,12 @@
           
           const priceDisplay = (Number(prod.price) === 0 || !prod.price) ? '' : `₹${Number(prod.price).toLocaleString('en-IN')}`;
           const catName = STATE.catCache[prod.categoryId] || 'Catalog Item';
+          const resolvedImg = getProductImage(prod);
           
           card.innerHTML = `
             <div class="prod-card-inner">
               <div class="prod-img-box">
-                ${prod.imageUrl ? `<img src="${prod.imageUrl}">` : `<div class="prod-img-placeholder">No Img</div>`}
+                ${resolvedImg ? `<img src="${resolvedImg}" onerror="this.style.display='none'">` : `<div class="prod-img-placeholder">No Img</div>`}
               </div>
               <div class="prod-info">
                 <div class="prod-name">${prod.name}</div>
@@ -611,6 +619,8 @@
           
           card.addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(10);
+            
+            // The user requested that clicking the product card opens the product detail view
             openProductDetail(prod, catName);
           });
           
@@ -659,6 +669,7 @@
     });
 
     // --- 6. Editing System (From Search) ---
+    // The user also requested edit functionality from within the detail modal.
     document.getElementById('pd-btn-edit').addEventListener('click', () => {
        openProductForm(STATE.editContext);
     });
@@ -675,8 +686,9 @@
       
       const imgPreview = document.getElementById('prod-img-preview');
       const box = document.getElementById('prod-img-picker');
-      if (prodData && prodData.imageUrl) {
-        imgPreview.src = prodData.imageUrl;
+      const resolvedImg = getProductImage(prodData);
+      if (prodData && resolvedImg) {
+        imgPreview.src = resolvedImg;
         box.classList.add('has-image');
       } else {
         imgPreview.src = '';
@@ -868,12 +880,12 @@
       btn.innerText = 'Saving...'; btn.style.pointerEvents = 'none';
 
       try {
-        let finalImageUrl = STATE.editContext.imageUrl;
+        let finalImageUrl = getProductImage(STATE.editContext);
         if (STATE.tempBase64Img) finalImageUrl = await uploadToImgBB(STATE.tempBase64Img);
 
         // Retain original categoryId during global search editing
         const payload = {
-          categoryId: STATE.editContext.categoryId,
+          categoryId: STATE.editContext.categoryId || null,
           name, price, brand, code, description: desc, imageUrl: finalImageUrl,
           searchKeywords: generateKeywordMap(name, code, desc, brand),
           updatedAt: new Date().toISOString()
@@ -928,15 +940,16 @@
       // Setup image and zoom functionality
       const imgEl = document.getElementById('pd-img');
       const imgWrap = document.getElementById('pd-img-wrap');
+      const resolvedImg = getProductImage(prod);
       
-      if (prod.imageUrl) {
-        imgEl.src = prod.imageUrl;
+      if (resolvedImg) {
+        imgEl.src = resolvedImg;
         imgEl.style.display = 'block';
         imgWrap.style.cursor = 'zoom-in';
         
         // Ensure zoom viewer is configured for this image
         imgWrap.onclick = () => {
-           document.getElementById('zoom-img').src = prod.imageUrl;
+           document.getElementById('zoom-img').src = resolvedImg;
            openModal('viewer-zoom');
         };
       } else {
