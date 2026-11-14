@@ -17,6 +17,7 @@
       --text-sub: #666666;
       --border: #e0e0e0;
       --primary: #2874f0; 
+      --danger: #dc3545;
       --header-height: 60px;
       --nav-height: 65px;
       --sidebar-width: 250px;
@@ -29,6 +30,7 @@
         --text-main: #ffffff;
         --text-sub: #a0a0a0;
         --border: #333333;
+        --danger: #ff8a80;
       }
     }
 
@@ -228,7 +230,7 @@
     #install-pill.show { transform: translateX(-50%) translateY(0); }
     #install-pill svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.5; }
 
-    /* Approval Pending Overlay Screen */
+    /* Approval Pending / Permission Denied Overlay Screen */
     .approval-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
       background: var(--surface-color);
@@ -243,11 +245,14 @@
     
     .approval-overlay.active { display: flex; }
     
-    .approval-overlay svg { width: 80px; height: 80px; color: var(--primary); margin-bottom: 24px; }
+    .approval-overlay svg { width: 80px; height: 80px; color: var(--danger); margin-bottom: 24px; }
     .approval-title { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; }
-    .approval-desc { font-size: 15px; color: var(--text-sub); line-height: 1.5; font-weight: 500; max-width: 300px; margin-bottom: 32px; }
-    .btn-refresh { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border); padding: 14px 32px; border-radius: 50px; font-size: 15px; font-weight: 800; cursor: pointer; transition: transform 0.15s; }
+    .approval-desc { font-size: 15px; color: var(--text-sub); line-height: 1.5; font-weight: 500; max-width: 320px; margin-bottom: 32px; }
+    .approval-actions { display: flex; gap: 12px; align-items: center; justify-content: center; flex-wrap: wrap; }
+    .btn-refresh { background: var(--primary); color: #ffffff; border: none; padding: 14px 32px; border-radius: 50px; font-size: 15px; font-weight: 800; cursor: pointer; transition: transform 0.15s; box-shadow: 0 8px 20px rgba(40, 116, 240, 0.25); }
     .btn-refresh:active { transform: scale(0.95); }
+    .btn-signout-overlay { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border); padding: 14px 24px; border-radius: 50px; font-size: 15px; font-weight: 800; cursor: pointer; transition: transform 0.15s; }
+    .btn-signout-overlay:active { transform: scale(0.95); }
 
     @media (max-width: 768px) {
       aside { display: none !important; }
@@ -338,18 +343,21 @@
     Install App
   </div>
 
-  <!-- Background Admin Approval Screen -->
+  <!-- Background Admin / Staff Permission Denied Screen -->
   <div class="approval-overlay" id="approval-screen">
     <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
-    <div class="approval-title">Pending Approval</div>
-    <div class="approval-desc">Your account setup is complete, but you require Administrator or Staff access to proceed. Please contact the owner.</div>
-    <button class="btn-refresh" onclick="window.location.reload()">Check Status</button>
+    <div class="approval-title">Permission Denied</div>
+    <div class="approval-desc">Your profile is created, but you require Administrator or Staff permission to access Aarvi Stores. Please wait for admin approval.</div>
+    <div class="approval-actions">
+      <button class="btn-refresh" onclick="window.location.reload()">Check Status</button>
+      <button class="btn-signout-overlay" id="btn-overlay-signout">Sign Out</button>
+    </div>
   </div>
 
   <script type="module">
     import { auth, db } from './config.js';
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     window.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -365,6 +373,10 @@
     const dpImg = document.getElementById('user-dp');
     const profileBtn = document.getElementById('profile-btn');
     const approvalScreen = document.getElementById('approval-screen');
+    const btnOverlaySignout = document.getElementById('btn-overlay-signout');
+
+    // Tracks whether the current user has been verified as Admin or Staff
+    let isAuthorizedRole = false;
 
     function setNavigationLock(locked) {
       if (locked) {
@@ -384,9 +396,58 @@
       dpImg.style.opacity = '1';
     }
 
+    // Sign out button on Permission Denied screen so locked users can switch accounts
+    if (btnOverlaySignout) {
+      btnOverlaySignout.addEventListener('click', async () => {
+        localStorage.clear();
+        sessionStorage.clear();
+        await signOut(auth);
+      });
+    }
+
+    // Background role verifier called on boot AND whenever setup.html redirects to home.html
+    async function verifyUserSetupAndRole(user) {
+      if (!user) return;
+
+      try {
+        const userRef = doc(db, 'users', user.uid);
+        const userSnap = await getDoc(userRef);
+
+        if (userSnap.exists()) {
+          localStorage.setItem('aarvi_setup_complete', 'true');
+          checkAdminStatus(userSnap.data());
+        } else {
+          // User has not completed setup.html yet
+          isAuthorizedRole = false;
+          localStorage.removeItem('aarvi_setup_complete');
+          approvalScreen.classList.remove('active');
+          setNavigationLock(true);
+          contentFrame.style.visibility = 'visible';
+
+          try {
+            const currentFrameHref = contentFrame.contentWindow.location.href;
+            if (!currentFrameHref.includes('setup.html')) {
+              contentFrame.src = "pages/setup.html";
+            }
+          } catch (e) {
+            if (!contentFrame.src.includes('setup.html')) {
+              contentFrame.src = "pages/setup.html";
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error verifying user role:", error);
+        // If Firestore rules block read or network fails, fail-safe to Permission Denied
+        isAuthorizedRole = false;
+        approvalScreen.classList.add('active');
+        setNavigationLock(true);
+      }
+    }
+
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
         // Not logged in
+        isAuthorizedRole = false;
         appHeader.style.display = 'none';
         appSidebar.classList.remove('shell-active');
         bottomNav.classList.remove('shell-active');
@@ -395,6 +456,7 @@
         
         localStorage.removeItem('aarvi_setup_complete');
         setNavigationLock(false);
+        contentFrame.style.visibility = 'visible';
         contentFrame.src = "pages/login.html";
       } else {
         // Logged in
@@ -403,56 +465,26 @@
         bottomNav.classList.add('shell-active');
         layoutWrapper.classList.add('shell-active');
 
-        let isSetupComplete = localStorage.getItem('aarvi_setup_complete');
-
-        if (!isSetupComplete) {
-          try {
-            const userRef = doc(db, 'users', user.uid);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-              localStorage.setItem('aarvi_setup_complete', 'true');
-              checkAdminStatus(userSnap.data()); // Check admin status on recover
-            } else {
-              setNavigationLock(true);
-              if (!contentFrame.src.includes('setup.html')) {
-                contentFrame.src = "pages/setup.html";
-              }
-              updateDP(user.photoURL);
-              return; 
-            }
-          } catch (error) {
-            console.error(error);
-          }
-        } else {
-          // Setup is complete, dynamically check Firestore for Admin/Staff role
-          try {
-            const userRef = doc(db, 'users', user.uid);
-            const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-              checkAdminStatus(userSnap.data());
-            } else {
-               // Rare edge case: user deleted from DB but session exists
-               auth.signOut();
-            }
-          } catch(e) { console.error(e); }
-        }
-
         updateDP(user.photoURL);
+        await verifyUserSetupAndRole(user);
       }
     });
     
     // --- Central Admin/Staff Guard Logic ---
     function checkAdminStatus(userData) {
-      if (userData.admin === true || userData.staff === true) {
-        // Authorized
+      if (userData && (userData.admin === true || userData.staff === true)) {
+        // Authorized Admin or Staff
+        isAuthorizedRole = true;
         approvalScreen.classList.remove('active');
         setNavigationLock(false);
+        contentFrame.style.visibility = 'visible';
         routeIframe();
       } else {
-        // Not authorized yet
+        // Not Admin or Staff -> Show Permission Denied Screen immediately!
+        isAuthorizedRole = false;
         approvalScreen.classList.add('active');
         setNavigationLock(true);
+        contentFrame.style.visibility = 'hidden';
       }
     }
     
@@ -481,11 +513,29 @@
       }
     }
 
-    contentFrame.addEventListener('load', () => {
+    // Intercepts when setup.html finishes (Skip or Save) and redirects the iframe to home.html!
+    contentFrame.addEventListener('load', async () => {
       try {
         const frameUrl = contentFrame.contentWindow.location.href;
+
         if (frameUrl.includes('setup.html')) {
           setNavigationLock(true);
+          approvalScreen.classList.remove('active');
+          contentFrame.style.visibility = 'visible';
+          return;
+        }
+
+        if (frameUrl.includes('login.html')) {
+          approvalScreen.classList.remove('active');
+          contentFrame.style.visibility = 'visible';
+          return;
+        }
+
+        // Whenever the iframe navigates to home.html (such as right after setup.html Skip/Save)
+        // or any other app page, if the user isn't verified as Admin/Staff yet, verify immediately!
+        if (auth.currentUser && !isAuthorizedRole) {
+          contentFrame.style.visibility = 'hidden';
+          await verifyUserSetupAndRole(auth.currentUser);
         }
       } catch (e) {}
     });
@@ -493,11 +543,16 @@
     window.addEventListener('message', async (event) => {
       if (event.data === 'SETUP_COMPLETE' || (event.data && event.data.type === 'SETUP_COMPLETE')) {
         localStorage.setItem('aarvi_setup_complete', 'true');
-        
-        // After setup, fetch DB to see if they got lucky with auto-admin, otherwise lock them
-        if(auth.currentUser) {
-           const userSnap = await getDoc(doc(db, 'users', auth.currentUser.uid));
-           if(userSnap.exists()) checkAdminStatus(userSnap.data());
+        if (auth.currentUser) {
+          await verifyUserSetupAndRole(auth.currentUser);
+        }
+      }
+    });
+
+    window.addEventListener('storage', async (e) => {
+      if (e.key === 'aarvi_setup_complete' && e.newValue === 'true') {
+        if (auth.currentUser) {
+          await verifyUserSetupAndRole(auth.currentUser);
         }
       }
     });
