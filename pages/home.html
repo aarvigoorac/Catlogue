@@ -38,17 +38,17 @@
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; -webkit-tap-highlight-color: transparent; }
-    html, body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; overflow: hidden; }
+    html, body { background-color: var(--bg-color); color: var(--text-main); height: 100vh; height: 100dvh; width: 100vw; overflow: hidden; }
 
     /* Layout & Header */
-    .app-container { display: flex; flex-direction: column; height: 100%; max-width: 900px; margin: 0 auto; background: var(--bg-color); position: relative; }
+    .app-container { display: flex; flex-direction: column; height: 100%; width: 100%; max-width: 900px; margin: 0 auto; background: var(--bg-color); position: relative; overflow: hidden; }
     
-    .main-header { padding: calc(16px + env(safe-area-inset-top)) 16px 12px; background: rgba(var(--surface-rgb), 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; display: flex; flex-direction: column; gap: 16px; }
-    .header-top { display: flex; align-items: center; justify-content: space-between; }
-    .back-nav-btn { display: none; background: transparent; border: none; color: var(--text-main); cursor: pointer; padding: 8px 12px 8px 0; margin-right: 8px; align-items: center; justify-content: center; transition: transform 0.2s; }
+    .main-header { padding: calc(16px + env(safe-area-inset-top)) 16px 12px; background: rgba(var(--surface-rgb), 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; display: flex; flex-direction: column; gap: 16px; flex-shrink: 0; }
+    .header-top { display: flex; align-items: center; justify-content: space-between; min-width: 0; }
+    .back-nav-btn { display: none; background: transparent; border: none; color: var(--text-main); cursor: pointer; padding: 8px 12px 8px 0; margin-right: 8px; align-items: center; justify-content: center; transition: transform 0.2s; flex-shrink: 0; }
     .back-nav-btn:active { transform: scale(0.9); }
     .back-nav-btn svg { width: 26px; height: 26px; stroke: currentColor; stroke-width: 2.5; }
-    .page-title { font-size: 24px; font-weight: 800; display: flex; align-items: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.5px; }
+    .page-title { font-size: 24px; font-weight: 800; display: flex; align-items: center; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.5px; }
 
     /* Search Bar */
     .search-wrap { position: relative; width: 100%; display: flex; align-items: center; }
@@ -60,37 +60,47 @@
     .search-input:focus + svg { stroke: var(--primary); }
 
     /* Scrollable Feeds */
-    .feed-container { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 120px; display: flex; flex-direction: column; gap: 16px; transition: opacity 0.3s ease; }
+    .feed-container { flex: 1; width: 100%; overflow-y: auto; overflow-x: hidden; padding: 16px; padding-bottom: 120px; display: flex; flex-direction: column; gap: 14px; transition: opacity 0.3s ease; -webkit-overflow-scrolling: touch; }
     
-    /* Fixed: align-items: start absolutely prevents grid height stretching bugs */
-    .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; align-items: start; }
-    @media (min-width: 600px) { .grid-layout { grid-template-columns: repeat(3, 1fr); } }
+    /* Fixed: minmax(0, 1fr) and grid-auto-rows: max-content prevent small-screen squishing and overlapping */
+    .feed-container.grid-layout { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); grid-auto-rows: max-content; gap: 12px; align-items: start; align-content: start; }
+    @media (min-width: 600px) { .feed-container.grid-layout { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; } }
 
     /* Category Cards - Strictly constrained to prevent layout breaks */
-    .cat-card { background: var(--surface-color); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .cat-card { background: var(--surface-color); border-radius: 18px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.03); width: 100%; min-width: 0; flex-shrink: 0; }
     .cat-card:active { transform: scale(0.96); background: var(--bg-color); }
-    .cat-img-wrap { width: 100%; aspect-ratio: 1; background: var(--bg-color); position: relative; border-bottom: 1px solid var(--border); overflow: hidden; }
-    .cat-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    .cat-details { padding: 16px; display: flex; flex-direction: column; gap: 4px; }
-    .cat-name { font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
-    .cat-meta { font-size: 13px; color: var(--text-sub); font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; }
+    .cat-img-wrap { width: 100%; aspect-ratio: 1 / 1; background: var(--bg-color); position: relative; border-bottom: 1px solid var(--border); overflow: hidden; flex-shrink: 0; }
+    .cat-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
+    .cat-details { padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; min-width: 0; flex-shrink: 0; }
+    .cat-name { font-size: 15px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+    .cat-meta { font-size: 12px; color: var(--text-sub); font-weight: 600; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; word-break: break-word; }
     
-    .btn-edit-item { position: absolute; top: 12px; right: 12px; background: rgba(var(--surface-rgb), 0.9); backdrop-filter: blur(4px); border-radius: 50%; padding: 8px; border: 1px solid var(--border); cursor: pointer; color: var(--text-main); box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s; display: flex; align-items: center; justify-content: center; }
+    .btn-edit-item { position: absolute; top: 10px; right: 10px; z-index: 2; background: rgba(var(--surface-rgb), 0.92); backdrop-filter: blur(4px); border-radius: 50%; width: 34px; height: 34px; padding: 0; border: 1px solid var(--border); cursor: pointer; color: var(--text-main); box-shadow: 0 4px 12px rgba(0,0,0,0.12); transition: transform 0.2s; display: flex; align-items: center; justify-content: center; }
     .btn-edit-item:active { transform: scale(0.9); }
-    .btn-edit-item svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.5; pointer-events: none; }
+    .btn-edit-item svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2.5; pointer-events: none; }
 
-    /* Product Cards */
-    .prod-card { background: var(--surface-color); border-radius: 20px; border: 1px solid var(--border); display: flex; gap: 16px; padding: 16px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+    /* Product Cards - flex-shrink: 0 stops vertical squishing on small screens */
+    .prod-card { background: var(--surface-color); border-radius: 18px; border: 1px solid var(--border); display: flex; align-items: stretch; gap: 14px; padding: 14px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.02); width: 100%; min-width: 0; flex-shrink: 0; }
     .prod-card:active { transform: scale(0.97); background: var(--bg-color); }
-    .prod-img-wrap { width: 90px; display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
-    .prod-img { width: 90px; height: 90px; border-radius: 12px; background: var(--bg-color); object-fit: cover; border: 1px solid var(--border); }
-    .prod-brand { font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; }
+    .prod-img-wrap { width: 84px; display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+    .prod-img { width: 84px; height: 84px; border-radius: 12px; background: var(--bg-color); object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; display: block; }
+    .prod-brand { font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; width: 100%; }
     
     .prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
-    .prod-name { font-size: 16px; font-weight: 800; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-main); }
-    .prod-desc-preview { font-size: 13px; color: var(--text-sub); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.4; margin-bottom: 4px; }
-    .prod-price { font-size: 18px; color: var(--primary); font-weight: 800; }
-    .prod-code { font-size: 12px; color: var(--text-sub); font-weight: 700; background: var(--bg-color); padding: 4px 8px; border-radius: 6px; width: max-content; border: 1px solid var(--border); }
+    .prod-name { font-size: 15px; font-weight: 800; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-main); word-break: break-word; }
+    .prod-desc-preview { font-size: 13px; color: var(--text-sub); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; line-height: 1.35; margin-bottom: 2px; word-break: break-word; }
+    .prod-price { font-size: 17px; color: var(--primary); font-weight: 800; white-space: nowrap; }
+    .prod-code { font-size: 11px; color: var(--text-sub); font-weight: 700; background: var(--bg-color); padding: 4px 8px; border-radius: 6px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border: 1px solid var(--border); }
+
+    @media (max-width: 360px) {
+      .feed-container { padding: 12px; padding-bottom: 120px; }
+      .feed-container.grid-layout { gap: 10px; }
+      .cat-details { padding: 10px 12px; }
+      .cat-name { font-size: 14px; }
+      .prod-card { padding: 12px; gap: 12px; }
+      .prod-img-wrap, .prod-img { width: 74px; height: 74px; }
+      .input-row { flex-direction: column; gap: 16px; }
+    }
 
     /* Floating Action Button */
     .fab { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px; width: 64px; height: 64px; border-radius: 32px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 28px rgba(40, 116, 240, 0.35); border: none; cursor: pointer; transition: transform 0.2s; z-index: 100; }
@@ -106,7 +116,7 @@
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 3000; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     
-    .bottom-sheet { position: fixed; bottom: 0; left: 50%; transform: translate(-50%, 100%); width: 100%; max-width: 600px; background: var(--bg-color); border-radius: 24px 24px 0 0; transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); max-height: 90vh; z-index: 3001; }
+    .bottom-sheet { position: fixed; bottom: 0; left: 50%; transform: translate(-50%, 100%); width: 100%; max-width: 600px; background: var(--bg-color); border-radius: 24px 24px 0 0; transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); max-height: 92vh; max-height: 92dvh; z-index: 3001; }
     .bottom-sheet.active { transform: translate(-50%, 0); }
 
     #sheet-source { z-index: 3005; } /* Picker always absolutely top of sheets */
@@ -120,38 +130,40 @@
     #viewer-zoom { z-index: 6000; }
 
     /* Bottom Sheet Header & Form Components */
-    .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--surface-color); border-bottom: 1px solid var(--border); border-radius: 24px 24px 0 0; position: sticky; top: 0; z-index: 10; }
+    .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--surface-color); border-bottom: 1px solid var(--border); border-radius: 24px 24px 0 0; position: sticky; top: 0; z-index: 10; flex-shrink: 0; }
     .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-main); }
-    .btn-icon { background: var(--bg-color); border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; transition: transform 0.1s; }
+    .btn-icon { background: var(--bg-color); border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; transition: transform 0.1s; flex-shrink: 0; }
     .btn-icon:active { transform: scale(0.9); }
     .btn-icon svg { width: 22px; height: 22px; stroke: currentColor; stroke-width: 2.5; pointer-events: none; }
-    .sheet-scroll { padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+    .sheet-scroll { padding: 20px; display: flex; flex-direction: column; gap: 18px; overflow-y: auto; padding-bottom: max(40px, env(safe-area-inset-bottom)); -webkit-overflow-scrolling: touch; }
+    .sheet-scroll > * { flex-shrink: 0; }
 
     /* Form Inputs */
-    .input-group { display: flex; flex-direction: column; gap: 8px; }
-    .input-row { display: flex; gap: 12px; }
-    .input-row .input-group { flex: 1; }
+    .input-group { display: flex; flex-direction: column; gap: 8px; flex-shrink: 0; }
+    .input-row { display: flex; gap: 12px; flex-shrink: 0; }
+    .input-row .input-group { flex: 1; min-width: 0; }
     .input-label { font-size: 12px; font-weight: 800; color: var(--text-sub); margin-left: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
     .input-field { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid var(--border); background: var(--surface-color); color: var(--text-main); font-size: 16px; font-weight: 600; outline: none; transition: border-color 0.2s; }
     .input-field:focus { border-color: var(--primary); }
     textarea.input-field { min-height: 100px; resize: vertical; }
 
-    .btn-master { width: 100%; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
+    .btn-master { width: 100%; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; flex-shrink: 0; }
     .btn-master:active { transform: scale(0.97); }
     .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(40, 116, 240, 0.25); }
     
-    .danger-zone { margin-top: 10px; padding-top: 20px; border-top: 1px solid var(--border); display: none; }
+    .danger-zone { margin-top: 10px; padding-top: 20px; border-top: 1px solid var(--border); display: none; flex-shrink: 0; }
     .btn-danger-ghost { background: transparent; border: 2px solid var(--danger-bg); color: var(--danger); }
     .btn-danger-ghost:active { background: var(--danger-bg); }
 
-    /* Fixed Image Picker UI (100% width, absolutely perfectly squared, NO SKEW) */
-    .image-picker-box { width: 100%; max-width: none; aspect-ratio: 1; margin: 0 auto; background: var(--surface-color); border: 2px dashed var(--border); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; color: var(--text-sub); transition: border-color 0.2s; }
+    /* Fixed Image Picker UI (Explicit dimensions & flex-shrink: 0 prevent 0px collapse in modal) */
+    .image-picker-box { width: 100%; max-width: 220px; height: 220px; aspect-ratio: 1 / 1; margin: 0 auto; background: var(--surface-color); border: 2px dashed var(--border); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; color: var(--text-sub); transition: border-color 0.2s; flex-shrink: 0; }
     .image-picker-box:active { border-color: var(--primary); }
     
-    .placeholder-content { display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
+    .placeholder-content { display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; padding: 16px; text-align: center; z-index: 1; }
     .placeholder-content svg { width: 36px; height: 36px; stroke: currentColor; stroke-width: 2; margin-bottom: 8px; }
     
-    .image-picker-box img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; display: none; border-radius: inherit; background: var(--bg-color); }
+    .image-picker-box img { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; display: none; border-radius: inherit; background: var(--bg-color); z-index: 2; }
+    .image-picker-box.has-image { border-style: solid; border-color: var(--primary); }
     .image-picker-box.has-image img { display: block; }
     .image-picker-box.has-image .placeholder-content { display: none; }
 
@@ -163,7 +175,7 @@
     /* Native In-App Camera */
     .camera-viewport { flex: 1; position: relative; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
     #camera-video { width: 100%; height: 100%; object-fit: cover; }
-    .camera-overlay-square { position: absolute; width: 300px; height: 300px; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); border-radius: 8px; pointer-events: none; }
+    .camera-overlay-square { position: absolute; width: 280px; height: 280px; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); border-radius: 8px; pointer-events: none; }
     @media(min-width: 400px) { .camera-overlay-square { width: 340px; height: 340px; } }
     @media(min-width: 600px) { .camera-overlay-square { width: 400px; height: 400px; } }
     
@@ -196,12 +208,12 @@
     .detail-pull-bar { width: 40px; height: 5px; background: var(--border); border-radius: 3px; margin: 12px auto 4px; }
     
     .detail-info { padding: 20px 24px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
-    .detail-title { font-size: 24px; font-weight: 800; color: var(--text-main); line-height: 1.3; }
-    .detail-price-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
+    .detail-title { font-size: 24px; font-weight: 800; color: var(--text-main); line-height: 1.3; word-break: break-word; }
+    .detail-price-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; flex-wrap: wrap; }
     .detail-price { font-size: 24px; font-weight: 800; color: var(--primary); }
     .detail-brand { font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; background: var(--bg-color); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); }
     .detail-code { font-size: 14px; color: var(--text-sub); font-weight: 700; background: var(--bg-color); padding: 6px 12px; border-radius: 8px; width: max-content; border: 1px solid var(--border); margin-top: 8px; }
-    .detail-desc { font-size: 15px; color: var(--text-sub); line-height: 1.6; white-space: pre-wrap; font-weight: 500; margin-top: 12px; }
+    .detail-desc { font-size: 15px; color: var(--text-sub); line-height: 1.6; white-space: pre-wrap; font-weight: 500; margin-top: 12px; word-break: break-word; }
     
     .action-row { padding: 20px 24px; border-top: 1px solid var(--border); padding-bottom: max(20px, env(safe-area-inset-bottom)); flex-shrink: 0; }
     .btn-outline { width: 100%; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: 2px solid var(--border); background: transparent; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
@@ -222,7 +234,7 @@
     .dialog-actions { display: flex; gap: 12px; }
 
     /* Skeletons */
-    .skeleton { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 200% 100% !important; animation: shimmer 1.5s infinite !important; border-radius: 12px; }
+    .skeleton { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 200% 100% !important; animation: shimmer 1.5s infinite !important; border-radius: 12px; display: block; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     #hidden-file { display: none; }
   </style>
@@ -303,7 +315,7 @@
           <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
           <div style="font-size:14px; font-weight:700;">Add Square Cover</div>
         </div>
-        <img id="cat-img-preview" src="">
+        <img id="cat-img-preview" alt="Catalog Cover Preview">
       </div>
       <div class="input-group">
         <label class="input-label">Catalog Name</label>
@@ -333,7 +345,7 @@
           <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
           <div style="font-size:14px; font-weight:700;">Add Square Image</div>
         </div>
-        <img id="prod-img-preview" src="">
+        <img id="prod-img-preview" alt="Product Image Preview">
       </div>
       <div class="input-group">
         <label class="input-label">Product Name</label>
@@ -501,6 +513,29 @@
       hasMoreProd: true
     };
 
+    const getProductImage = (item) => {
+      if (!item) return '';
+      if (item.imageUrl) return item.imageUrl;
+      if (item.images && item.images.thumbnail) return item.images.thumbnail;
+      if (item.image) return item.image;
+      return '';
+    };
+
+    const setPickerImage = (boxEl, imgEl, url) => {
+      if (url) {
+        imgEl.onerror = () => {
+          imgEl.removeAttribute('src');
+          boxEl.classList.remove('has-image');
+        };
+        imgEl.src = url;
+        boxEl.classList.add('has-image');
+      } else {
+        imgEl.onerror = null;
+        imgEl.removeAttribute('src');
+        boxEl.classList.remove('has-image');
+      }
+    };
+
     const ui = {
       title: document.getElementById('main-title'),
       btnBack: document.getElementById('btn-back-to-cats'),
@@ -528,10 +563,10 @@
             <div class="skeleton" style="height:10px; width:100%; border-radius:4px;"></div>
           </div>
           <div class="prod-info">
-            <div class="skeleton" style="height:16px; width:100%; border-radius:4px; margin-bottom:4px;"></div>
+            <div class="skeleton" style="height:16px; width:90%; border-radius:4px; margin-bottom:4px;"></div>
             <div class="skeleton" style="height:13px; width:100%; border-radius:4px; margin-bottom:2px;"></div>
-            <div class="skeleton" style="height:13px; width:70%; border-radius:4px; margin-bottom:8px;"></div>
-            <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div class="skeleton" style="height:13px; width:65%; border-radius:4px; margin-bottom:8px;"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
               <div class="skeleton" style="height:18px; width:40%; border-radius:4px;"></div>
               <div class="skeleton" style="height:14px; width:30%; border-radius:4px;"></div>
             </div>
@@ -673,11 +708,12 @@
 
         snap.forEach(docSnap => {
           const cat = { id: docSnap.id, ...docSnap.data() };
+          const resolvedCatImg = getProductImage(cat);
           const card = document.createElement('div');
           card.className = 'cat-card';
           card.innerHTML = `
             <div class="cat-img-wrap">
-              ${cat.imageUrl ? `<img src="${cat.imageUrl}" class="cat-img">` : `<div class="cat-img" style="display:flex;align-items:center;justify-content:center;background:var(--skeleton-base);color:var(--text-sub);font-size:14px;font-weight:700;">No Image</div>`}
+              ${resolvedCatImg ? `<img src="${resolvedCatImg}" class="cat-img" onerror="this.style.display='none'">` : `<div class="cat-img" style="display:flex;align-items:center;justify-content:center;background:var(--skeleton-base);color:var(--text-sub);font-size:14px;font-weight:700;">No Image</div>`}
               <button class="btn-edit-item"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.89 1.127l-3.196.1a.375.375 0 01-.423-.423l.1-3.196a4.5 4.5 0 011.127-1.89l14.312-14.31z"/></svg></button>
             </div>
             <div class="cat-details">
@@ -742,6 +778,7 @@
 
         snap.forEach(docSnap => {
           const prod = { id: docSnap.id, ...docSnap.data() };
+          const resolvedProdImg = getProductImage(prod);
           
           const card = document.createElement('div');
           card.className = 'prod-card';
@@ -750,13 +787,13 @@
           
           card.innerHTML = `
             <div class="prod-img-wrap">
-              ${prod.imageUrl ? `<img class="prod-img" src="${prod.imageUrl}">` : `<div class="prod-img" style="display:flex;align-items:center;justify-content:center;color:var(--text-sub);font-size:12px;font-weight:700;">No Img</div>`}
+              ${resolvedProdImg ? `<img class="prod-img" src="${resolvedProdImg}" onerror="this.style.display='none'">` : `<div class="prod-img" style="display:flex;align-items:center;justify-content:center;color:var(--text-sub);font-size:12px;font-weight:700;">No Img</div>`}
               ${prod.brand ? `<div class="prod-brand">${prod.brand}</div>` : ''}
             </div>
             <div class="prod-info">
               <div class="prod-name">${prod.name}</div>
               ${prod.description ? `<div class="prod-desc-preview">${prod.description}</div>` : ''}
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto;">
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; margin-top:auto;">
                 <div class="prod-price">${priceDisplay}</div>
                 ${prod.code ? `<div class="prod-code">${prod.code}</div>` : ''}
               </div>
@@ -813,13 +850,8 @@
       
       const imgPreview = document.getElementById('cat-img-preview');
       const box = document.getElementById('cat-img-picker');
-      if (catData && catData.imageUrl) {
-        imgPreview.src = catData.imageUrl;
-        box.classList.add('has-image');
-      } else {
-        imgPreview.src = '';
-        box.classList.remove('has-image');
-      }
+      const existingImg = getProductImage(catData);
+      setPickerImage(box, imgPreview, existingImg);
       
       openModal('sheet-category');
     }
@@ -838,13 +870,8 @@
       
       const imgPreview = document.getElementById('prod-img-preview');
       const box = document.getElementById('prod-img-picker');
-      if (prodData && prodData.imageUrl) {
-        imgPreview.src = prodData.imageUrl;
-        box.classList.add('has-image');
-      } else {
-        imgPreview.src = '';
-        box.classList.remove('has-image');
-      }
+      const existingImg = getProductImage(prodData);
+      setPickerImage(box, imgPreview, existingImg);
       
       openModal('sheet-product');
     }
@@ -1009,11 +1036,9 @@
       STATE.tempBase64Img = base64Final;
       
       if (STATE.pendingImgTarget === 'cat') {
-        document.getElementById('cat-img-preview').src = base64Final;
-        document.getElementById('cat-img-picker').classList.add('has-image');
+        setPickerImage(document.getElementById('cat-img-picker'), document.getElementById('cat-img-preview'), base64Final);
       } else {
-        document.getElementById('prod-img-preview').src = base64Final;
-        document.getElementById('prod-img-picker').classList.add('has-image');
+        setPickerImage(document.getElementById('prod-img-picker'), document.getElementById('prod-img-preview'), base64Final);
       }
 
       btn.innerText = 'Confirm'; btn.style.pointerEvents = 'auto';
@@ -1039,7 +1064,7 @@
       btn.innerText = 'Saving...'; btn.style.pointerEvents = 'none';
 
       try {
-        let finalImageUrl = STATE.editContext ? STATE.editContext.imageUrl : null;
+        let finalImageUrl = STATE.editContext ? getProductImage(STATE.editContext) : null;
         if (STATE.tempBase64Img) finalImageUrl = await uploadToImgBB(STATE.tempBase64Img);
 
         const payload = {
@@ -1076,7 +1101,7 @@
       btn.innerText = 'Saving...'; btn.style.pointerEvents = 'none';
 
       try {
-        let finalImageUrl = STATE.editContext ? STATE.editContext.imageUrl : null;
+        let finalImageUrl = STATE.editContext ? getProductImage(STATE.editContext) : null;
         if (STATE.tempBase64Img) finalImageUrl = await uploadToImgBB(STATE.tempBase64Img);
 
         const payload = {
@@ -1088,13 +1113,14 @@
 
         if (STATE.editContext) {
           await updateDoc(doc(db, "products", STATE.editContext.id), payload);
+          STATE.editContext = { ...STATE.editContext, ...payload };
+          populateProductDetailUI(STATE.editContext);
         } else {
           payload.createdAt = new Date().toISOString();
           await addDoc(collection(db, "products"), payload);
         }
 
-        history.back(); // close form
-        if (STATE.modalStack.includes('modal-product-detail')) history.back(); 
+        history.back(); // close form sheet cleanly
         loadProducts(true);
       } catch (err) {
         console.error(err);
@@ -1104,8 +1130,7 @@
     });
 
     // --- 10. Product Detail & Zoom ---
-    function openProductDetail(prod) {
-      STATE.editContext = prod;
+    function populateProductDetailUI(prod) {
       document.getElementById('pd-name').innerText = prod.name;
       document.getElementById('pd-price').innerText = (prod.price === 0 || !prod.price) ? '' : `₹${Number(prod.price).toLocaleString('en-IN')}`;
       
@@ -1131,19 +1156,25 @@
       }
       
       const imgEl = document.getElementById('pd-img');
-      if (prod.imageUrl) {
-        imgEl.src = prod.imageUrl;
+      const resolvedImg = getProductImage(prod);
+      if (resolvedImg) {
+        imgEl.src = resolvedImg;
         imgEl.style.display = 'block';
       } else {
         imgEl.style.display = 'none';
       }
+    }
 
+    function openProductDetail(prod) {
+      STATE.editContext = prod;
+      populateProductDetailUI(prod);
       openModal('modal-product-detail');
     }
 
     document.getElementById('pd-img-wrap').addEventListener('click', () => {
-      if (!STATE.editContext || !STATE.editContext.imageUrl) return;
-      document.getElementById('zoom-img').src = STATE.editContext.imageUrl;
+      const resolvedImg = getProductImage(STATE.editContext);
+      if (!STATE.editContext || !resolvedImg) return;
+      document.getElementById('zoom-img').src = resolvedImg;
       openModal('viewer-zoom');
     });
 
@@ -1175,7 +1206,9 @@
         if (pendingDeleteMode === 'prod') {
           await deleteDoc(doc(db, "products", STATE.editContext.id));
           history.back(); // close confirm
-          history.back(); // close product detail
+          setTimeout(() => {
+            if (STATE.modalStack.includes('modal-product-detail')) history.back();
+          }, 60);
           loadProducts(true);
         } 
         else if (pendingDeleteMode === 'cat') {
@@ -1203,7 +1236,9 @@
           for (let b of batches) await b.commit();
 
           history.back(); // close confirm
-          history.back(); // close cat sheet
+          setTimeout(() => {
+            if (STATE.modalStack.includes('sheet-category')) history.back();
+          }, 60);
           loadCategories(true);
         }
       } catch (err) {
