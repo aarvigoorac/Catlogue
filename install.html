@@ -297,18 +297,19 @@
     const browserNotice = document.getElementById('browser-notice');
 
     let deferredPrompt = null;
-    const INSTALL_DURATION_MS = 45000; // Exact 45 seconds animation
+    const INSTALL_DURATION_MS = 45000; // Exact 45 seconds animation duration
 
-    // Check if running as installed standalone PWA
+    // Check if running as installed standalone PWA or flagged in localStorage
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+    const isLocalStorageMarkedInstalled = localStorage.getItem('aarvi_pwa_installed') === 'true';
 
     // Check if browser is Chrome (or compatible Chromium)
     const isUserAgentChrome = /CriOS|Chrome/.test(navigator.userAgent) && !/Edge|OPR|SamsungBrowser/.test(navigator.userAgent);
 
-    if (isStandalone) {
+    if (isStandalone || isLocalStorageMarkedInstalled) {
       setInstalledState();
     } else if (!isUserAgentChrome) {
-      // Non-chrome browser detection
+      // Non-chrome browser detection fallback
       browserNotice.classList.add('show');
       installBtnText.innerText = "Open in Chrome";
       btnInstall.onclick = () => {
@@ -317,9 +318,11 @@
     }
 
     function setInstalledState() {
+      btnInstall.style.display = 'flex';
       btnInstall.classList.add('btn-installed');
       installBtnText.innerText = "App Installed ✓";
       progressBox.classList.remove('active');
+      localStorage.setItem('aarvi_pwa_installed', 'true');
     }
 
     // 3. PWA Prompt Handler
@@ -335,7 +338,7 @@
 
     // 4. Install Button Click & 45-Sec Animation Flow
     btnInstall.addEventListener('click', async () => {
-      if (isStandalone) return;
+      if (isStandalone || isLocalStorageMarkedInstalled) return;
       if (navigator.vibrate) navigator.vibrate(30);
 
       // Trigger native browser PWA install banner if captured
