@@ -7,7 +7,6 @@
   <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
   <title>Aarvi Stores</title>
   
-  <!-- PWA Manifest -->
   <link rel="manifest" href="./manifest.json">
   
   <style>
@@ -47,13 +46,7 @@
       user-select: none !important;
     }
 
-    /* --- Advanced Anti-Popup & Context Menu Fixes --- */
-    /* 1. Disable the native link-preview popup on all anchor tags and images */
-    a, 
-    img,
-    .nav-item, 
-    .b-item, 
-    .dp-wrapper {
+    a, img, .nav-item, .b-item, .dp-wrapper {
       -webkit-touch-callout: none !important;
       -webkit-user-select: none !important;
       user-select: none !important;
@@ -61,14 +54,9 @@
       outline: none !important;
     }
 
-    /* 2. Prevent the SVGs, spans, and images inside the buttons from triggering their own touch events. 
-          This forces the OS to register the touch purely on the parent container. */
-    .nav-item *, 
-    .b-item *, 
-    .dp-wrapper * {
+    .nav-item *, .b-item *, .dp-wrapper * {
       pointer-events: none !important;
     }
-    /* ------------------------------------------------ */
 
     body, html {
       background-color: var(--bg-color);
@@ -81,11 +69,11 @@
       flex-direction: column;
     }
 
-    /* --- Top Header --- */
+    /* Top Header */
     header {
       height: var(--header-height);
       background-color: var(--surface-color);
-      display: flex; /* Visible by default for optimistic loading */
+      display: flex; 
       align-items: center;
       justify-content: space-between;
       padding: 0 20px;
@@ -103,12 +91,7 @@
       gap: 10px;
     }
 
-    .brand img { 
-      width: 28px; 
-      height: 28px; 
-      object-fit: contain; 
-      border-radius: 6px; 
-    }
+    .brand img { width: 28px; height: 28px; object-fit: contain; border-radius: 6px; }
 
     .dp-wrapper {
       width: 36px;
@@ -122,15 +105,9 @@
       transition: opacity 0.3s, filter 0.3s;
     }
 
-    .dp-wrapper img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
+    .dp-wrapper img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.3s; }
 
-    /* --- Main Layout Wrapper --- */
+    /* Main Layout Wrapper */
     .layout-wrapper {
       display: flex;
       flex: 1;
@@ -138,7 +115,7 @@
       position: relative;
     }
 
-    /* --- Desktop Sidebar --- */
+    /* Desktop Sidebar */
     aside {
       width: var(--sidebar-width);
       background-color: var(--surface-color);
@@ -152,11 +129,7 @@
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    aside.shell-active {
-      opacity: 1;
-      transform: translateX(0);
-      pointer-events: auto;
-    }
+    aside.shell-active { opacity: 1; transform: translateX(0); pointer-events: auto; }
 
     .nav-list { display: flex; flex-direction: column; padding: 16px 12px; gap: 8px; }
 
@@ -175,24 +148,14 @@
 
     .nav-item:hover { background-color: var(--bg-color); color: var(--text-main); }
     .nav-item.active { background-color: rgba(40, 116, 240, 0.1); color: var(--primary); }
-    .nav-item svg { width: 22px; height: 22px; fill: currentColor; }
+    .nav-item svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .nav-item.active svg { stroke-width: 2.5; }
 
-    /* --- Iframe Container --- */
-    main {
-      flex: 1;
-      background-color: var(--bg-color);
-      position: relative;
-    }
+    /* Iframe Container */
+    main { flex: 1; background-color: var(--bg-color); position: relative; }
+    #content-frame { width: 100%; height: 100%; border: none; background: transparent; display: block; }
 
-    #content-frame {
-      width: 100%;
-      height: 100%;
-      border: none;
-      background: transparent;
-      display: block;
-    }
-
-    /* --- Mobile Bottom Nav --- */
+    /* Mobile Bottom Nav */
     .bottom-nav {
       position: fixed;
       bottom: 0;
@@ -211,19 +174,8 @@
       transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
-    .bottom-nav.shell-active {
-      opacity: 1;
-      transform: translateY(0);
-      pointer-events: auto;
-    }
-
-    .bottom-nav-inner {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      height: 100%;
-      width: 100%;
-    }
+    .bottom-nav.shell-active { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    .bottom-nav-inner { display: flex; justify-content: space-around; align-items: center; height: 100%; width: 100%; }
 
     .b-item {
       display: flex;
@@ -237,13 +189,13 @@
       height: 100%;
     }
 
-    .b-item svg { width: 24px; height: 24px; fill: currentColor; transition: transform 0.2s; }
+    .b-item svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s; }
     .b-item span { font-size: 11px; font-weight: 600; }
     
     .b-item.active { color: var(--primary); }
-    .b-item.active svg { transform: scale(1.15); }
+    .b-item.active svg { transform: scale(1.15); stroke-width: 2.5; }
 
-    /* --- Navigation Locked State --- */
+    /* Navigation Locked State */
     .nav-locked {
       pointer-events: none !important;
       opacity: 0.4 !important;
@@ -252,7 +204,7 @@
       user-select: none !important;
     }
 
-    /* --- PWA Install Pill --- */
+    /* PWA Install Pill */
     #install-pill {
       position: fixed;
       bottom: calc(var(--nav-height) + env(safe-area-inset-bottom) + 20px);
@@ -274,13 +226,29 @@
     }
 
     #install-pill.show { transform: translateX(-50%) translateY(0); }
-    #install-pill svg { width: 18px; height: 18px; stroke: currentColor; }
+    #install-pill svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.5; }
 
-    /* --- Notification Toast --- */
-    #toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-150px); background: #137333; color: white; padding: 14px 24px; border-radius: 50px; font-size: 15px; font-weight: 600; opacity: 0; transition: all 0.4s cubic-bezier(0.32, 0.72, 0, 1); z-index: 3000; box-shadow: 0 8px 20px rgba(0,0,0,0.25); display: flex; align-items: center; gap: 10px; width: max-content; pointer-events: none; }
-    #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+    /* Approval Pending Overlay Screen */
+    .approval-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: var(--surface-color);
+      z-index: 9999;
+      display: none; /* Hidden by default */
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 24px;
+    }
+    
+    .approval-overlay.active { display: flex; }
+    
+    .approval-overlay svg { width: 80px; height: 80px; color: var(--primary); margin-bottom: 24px; }
+    .approval-title { font-size: 24px; font-weight: 800; color: var(--text-main); margin-bottom: 12px; }
+    .approval-desc { font-size: 15px; color: var(--text-sub); line-height: 1.5; font-weight: 500; max-width: 300px; margin-bottom: 32px; }
+    .btn-refresh { background: var(--bg-color); color: var(--text-main); border: 1px solid var(--border); padding: 14px 32px; border-radius: 50px; font-size: 15px; font-weight: 800; cursor: pointer; transition: transform 0.15s; }
+    .btn-refresh:active { transform: scale(0.95); }
 
-    /* --- Responsive Switching --- */
     @media (max-width: 768px) {
       aside { display: none !important; }
       .layout-wrapper.shell-active { padding-bottom: calc(var(--nav-height) + env(safe-area-inset-bottom)); }
@@ -306,23 +274,28 @@
   </header>
 
   <div class="layout-wrapper shell-active" id="layout-wrapper">
+    
     <!-- Desktop Side Navigation -->
     <aside id="app-sidebar" class="shell-active">
       <div class="nav-list">
+        <!-- Home (Catalogs) -->
         <a href="pages/home.html" class="nav-item active" target="content-frame" onclick="handleNavClick(0)">
-          <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
           Home
         </a>
-        <a href="pages/catlogue.html" class="nav-item" target="content-frame" onclick="handleNavClick(1)">
-          <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-          Catalogue
+        <!-- Search Inventory -->
+        <a href="pages/search.html" class="nav-item" target="content-frame" onclick="handleNavClick(1)">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          Search
         </a>
-        <a href="pages/products.html" class="nav-item" target="content-frame" onclick="handleNavClick(2)">
-          <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-          Products
+        <!-- PDF Export -->
+        <a href="pages/pdf.html" class="nav-item" target="content-frame" onclick="handleNavClick(2)">
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Export PDF
         </a>
+        <!-- Users Management -->
         <a href="pages/users.html" class="nav-item" target="content-frame" onclick="handleNavClick(3)">
-          <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           Users
         </a>
       </div>
@@ -332,7 +305,6 @@
     <main>
       <iframe id="content-frame" name="content-frame" title="App Content"></iframe>
       <script>
-        // Loads the homepage instantly with any URL parameters passed from the parent
         document.getElementById('content-frame').src = "pages/home.html" + window.location.search;
       </script>
     </main>
@@ -342,28 +314,36 @@
   <nav class="bottom-nav shell-active" id="bottom-nav">
     <div class="bottom-nav-inner">
       <a href="pages/home.html" class="b-item active" target="content-frame" onclick="handleNavClick(0)">
-        <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
         <span>Home</span>
       </a>
-      <a href="pages/catlogue.html" class="b-item" target="content-frame" onclick="handleNavClick(1)">
-        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
-        <span>Catalogue</span>
+      <a href="pages/search.html" class="b-item" target="content-frame" onclick="handleNavClick(1)">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <span>Search</span>
       </a>
-      <a href="pages/products.html" class="b-item" target="content-frame" onclick="handleNavClick(2)">
-        <svg viewBox="0 0 24 24"><path d="M7 18c-1.1 0-1.99.9-1.99 2S5.9 22 7 22s2-.9 2-2-.9-2-2-2zM1 2v2h2l3.6 7.59-1.35 2.45c-.16.28-.25.61-.25.96 0 1.1.9 2 2 2h12v-2H7.42c-.14 0-.25-.11-.25-.25l.03-.12.9-1.63h7.45c.75 0 1.41-.41 1.75-1.03l3.58-6.49c.08-.14.12-.31.12-.48 0-.55-.45-1-1-1H5.21l-.94-2H1zm16 16c-1.1 0-1.99.9-1.99 2s.89 2 1.99 2 2-.9 2-2-.9-2-2-2z"/></svg>
-        <span>Products</span>
+      <a href="pages/pdf.html" class="b-item" target="content-frame" onclick="handleNavClick(2)">
+        <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+        <span>PDF</span>
       </a>
       <a href="pages/users.html" class="b-item" target="content-frame" onclick="handleNavClick(3)">
-        <svg viewBox="0 0 24 24"><path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
         <span>Users</span>
       </a>
     </div>
   </nav>
 
-  <!-- Install App Pill -->
+  <!-- PWA Install Pill -->
   <div id="install-pill">
-    <svg fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
     Install App
+  </div>
+
+  <!-- Background Admin Approval Screen -->
+  <div class="approval-overlay" id="approval-screen">
+    <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+    <div class="approval-title">Pending Approval</div>
+    <div class="approval-desc">Your account setup is complete, but you require Administrator or Staff access to proceed. Please contact the owner.</div>
+    <button class="btn-refresh" onclick="window.location.reload()">Check Status</button>
   </div>
 
   <script type="module">
@@ -371,20 +351,12 @@
     import { doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // Completely disable global native right-click/long-press context menus
-    window.addEventListener('contextmenu', (e) => {
-      e.preventDefault();
-    });
+    window.addEventListener('contextmenu', (e) => e.preventDefault());
 
-    // 1. Service Worker Registration
     if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .catch(err => console.error('SW Failed', err));
-      });
+      window.addEventListener('load', () => navigator.serviceWorker.register('./sw.js').catch(err => {}));
     }
 
-    // UI Shell Elements
     const appHeader = document.getElementById('app-header');
     const appSidebar = document.getElementById('app-sidebar');
     const bottomNav = document.getElementById('bottom-nav');
@@ -392,8 +364,8 @@
     const contentFrame = document.getElementById('content-frame');
     const dpImg = document.getElementById('user-dp');
     const profileBtn = document.getElementById('profile-btn');
+    const approvalScreen = document.getElementById('approval-screen');
 
-    // Button Lock Controller
     function setNavigationLock(locked) {
       if (locked) {
         appSidebar.classList.add('nav-locked');
@@ -406,28 +378,26 @@
       }
     }
 
-    // 0ms Profile Picture Load
     const localDpUrl = localStorage.getItem('aarvi_dp');
     if (localDpUrl) {
       dpImg.src = localDpUrl;
       dpImg.style.opacity = '1';
     }
 
-    // 2. Auth Protection & UI Shell Handler
     onAuthStateChanged(auth, async (user) => {
       if (!user) {
-        // NOT LOGGED IN: Completely remove header from DOM flow to remove the black gap
+        // Not logged in
         appHeader.style.display = 'none';
         appSidebar.classList.remove('shell-active');
         bottomNav.classList.remove('shell-active');
         layoutWrapper.classList.remove('shell-active');
+        approvalScreen.classList.remove('active');
         
         localStorage.removeItem('aarvi_setup_complete');
         setNavigationLock(false);
-        
         contentFrame.src = "pages/login.html";
       } else {
-        // LOGGED IN: Bring header back into layout
+        // Logged in
         appHeader.style.display = 'flex';
         appSidebar.classList.add('shell-active');
         bottomNav.classList.add('shell-active');
@@ -442,119 +412,92 @@
 
             if (userSnap.exists()) {
               localStorage.setItem('aarvi_setup_complete', 'true');
-              setNavigationLock(false);
+              checkAdminStatus(userSnap.data()); // Check admin status on recover
             } else {
               setNavigationLock(true);
               if (!contentFrame.src.includes('setup.html')) {
                 contentFrame.src = "pages/setup.html";
               }
-
-              if (user.photoURL && user.photoURL !== localDpUrl) {
-                const tempImg = new Image();
-                tempImg.onload = () => {
-                  dpImg.src = tempImg.src;
-                  dpImg.style.opacity = '1';
-                  localStorage.setItem('aarvi_dp', tempImg.src);
-                };
-                tempImg.src = user.photoURL;
-              }
+              updateDP(user.photoURL);
               return; 
             }
           } catch (error) {
-            console.error("Error verifying user document status:", error);
+            console.error(error);
           }
         } else {
-          setNavigationLock(false);
+          // Setup is complete, dynamically check Firestore for Admin/Staff role
+          try {
+            const userRef = doc(db, 'users', user.uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+              checkAdminStatus(userSnap.data());
+            } else {
+               // Rare edge case: user deleted from DB but session exists
+               auth.signOut();
+            }
+          } catch(e) { console.error(e); }
         }
 
-        const currentSrc = contentFrame.src || "";
-        const deepLinkParams = window.location.search;
-
-        // 1. If the user is stuck on login, setup, or a blank page, send them to home (with params if they exist)
-        if (currentSrc.includes('login.html') || currentSrc.includes('setup.html') || currentSrc.includes('index.html') || currentSrc === "about:blank") {
-          contentFrame.src = "pages/home.html" + deepLinkParams;
-        } 
-        // 2. If already on the homepage, ONLY reload if there is an actual deep link parameter to pass down
-        else if (currentSrc.includes('home.html') && deepLinkParams !== "") {
-          // Pro-check: Ensure we don't cause an infinite reload loop if the iframe already has the parameters
-          if (!currentSrc.includes(deepLinkParams)) {
-            contentFrame.src = "pages/home.html" + deepLinkParams;
-          }
-        }
-
-        if (user.photoURL && user.photoURL !== localDpUrl) {
-          const tempImg = new Image();
-          tempImg.onload = () => {
-            dpImg.src = tempImg.src;
-            dpImg.style.opacity = '1';
-            localStorage.setItem('aarvi_dp', tempImg.src);
-          };
-          tempImg.src = user.photoURL;
-        }
+        updateDP(user.photoURL);
       }
     });
+    
+    // --- Central Admin/Staff Guard Logic ---
+    function checkAdminStatus(userData) {
+      if (userData.admin === true || userData.staff === true) {
+        // Authorized
+        approvalScreen.classList.remove('active');
+        setNavigationLock(false);
+        routeIframe();
+      } else {
+        // Not authorized yet
+        approvalScreen.classList.add('active');
+        setNavigationLock(true);
+      }
+    }
+    
+    function routeIframe() {
+      const currentSrc = contentFrame.src || "";
+      const deepLinkParams = window.location.search;
+
+      if (currentSrc.includes('login.html') || currentSrc.includes('setup.html') || currentSrc.includes('index.html') || currentSrc === "about:blank") {
+        contentFrame.src = "pages/home.html" + deepLinkParams;
+      } else if (currentSrc.includes('home.html') && deepLinkParams !== "") {
+        if (!currentSrc.includes(deepLinkParams)) {
+          contentFrame.src = "pages/home.html" + deepLinkParams;
+        }
+      }
+    }
+
+    function updateDP(url) {
+      if (url && url !== localDpUrl) {
+        const tempImg = new Image();
+        tempImg.onload = () => {
+          dpImg.src = tempImg.src;
+          dpImg.style.opacity = '1';
+          localStorage.setItem('aarvi_dp', tempImg.src);
+        };
+        tempImg.src = url;
+      }
+    }
 
     contentFrame.addEventListener('load', () => {
       try {
         const frameUrl = contentFrame.contentWindow.location.href;
-
         if (frameUrl.includes('setup.html')) {
           setNavigationLock(true);
-        } else if (localStorage.getItem('aarvi_setup_complete')) {
-          setNavigationLock(false);
-        }
-
-        if (auth.currentUser && localStorage.getItem('aarvi_setup_complete') && (frameUrl.includes('login.html') || frameUrl.includes('index.html'))) {
-           contentFrame.src = "pages/home.html";
         }
       } catch (e) {}
     });
 
-    // 3. Central PostMessage Event Router (Setup + Native Sharing)
     window.addEventListener('message', async (event) => {
-      // Complete Setup Event
       if (event.data === 'SETUP_COMPLETE' || (event.data && event.data.type === 'SETUP_COMPLETE')) {
         localStorage.setItem('aarvi_setup_complete', 'true');
-        setNavigationLock(false);
-        // Fix: Ensure deep links pass through during first setup boot
-        contentFrame.src = "pages/home.html" + window.location.search;
-      }
-
-      // App Shell Native Share Event Router
-      if (event.data && event.data.type === 'SHARE_PRODUCT') {
-        const product = event.data.product;
-        if (!product) return;
         
-        // This generates the URL using the parent's app root location
-        const shareUrl = `${window.location.origin}${window.location.pathname}?product=${product.id}`;
-        const shareData = {
-          title: product.name,
-          text: `Check out ${product.name} at Aarvi Stores!`,
-          url: shareUrl
-        };
-
-        try {
-          if (navigator.share) {
-            await navigator.share(shareData);
-          } else {
-            // Fallback for non-mobile platforms
-            await navigator.clipboard.writeText(shareUrl);
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-          }
-        } catch (err) {
-          console.error('Error sharing from app shell:', err);
-        }
-      }
-    });
-
-    window.addEventListener('storage', (e) => {
-      if (e.key === 'aarvi_setup_complete' && e.newValue === 'true') {
-        setNavigationLock(false);
-        if (contentFrame.src.includes('setup.html')) {
-          // Fix: Ensure deep links pass through on storage syncs
-          contentFrame.src = "pages/home.html" + window.location.search;
+        // After setup, fetch DB to see if they got lucky with auto-admin, otherwise lock them
+        if(auth.currentUser) {
+           const userSnap = await getDoc(doc(db, 'users', auth.currentUser.uid));
+           if(userSnap.exists()) checkAdminStatus(userSnap.data());
         }
       }
     });
@@ -588,7 +531,6 @@
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') console.log('User installed the PWA');
         deferredPrompt = null;
         installPill.classList.remove('show');
       }
