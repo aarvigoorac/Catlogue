@@ -116,8 +116,9 @@
     .prod-card.selected .custom-checkbox { background: var(--primary); border-color: var(--primary); color: #ffffff; transform: scale(1.05); }
     .custom-checkbox svg { width: 15px; height: 15px; stroke: currentColor; stroke-width: 3; }
 
-    .prod-img-wrap { width: 84px; display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; }
+    .prod-img-wrap { width: 84px; display: flex; flex-direction: column; align-items: center; gap: 6px; flex-shrink: 0; position: relative; cursor: zoom-in; }
     .prod-img { width: 84px; height: 84px; border-radius: 12px; background: var(--bg-color); object-fit: cover; border: 1px solid var(--border); flex-shrink: 0; display: block; }
+    .prod-img-zoom-hint { position: absolute; top: 58px; right: 4px; background: rgba(0,0,0,0.65); color: #fff; border-radius: 6px; padding: 2px 5px; font-size: 9px; font-weight: 800; pointer-events: none; backdrop-filter: blur(2px); }
     .prod-brand { font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0.5px; width: 100%; }
     
     .prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: space-between; gap: 6px; }
@@ -133,6 +134,7 @@
       .cat-name { font-size: 14px; }
       .prod-card { padding: 12px; gap: 10px; }
       .prod-img-wrap, .prod-img { width: 72px; height: 72px; }
+      .prod-img-zoom-hint { top: 48px; }
     }
 
     /* Bottom Middle Popup Bar (Selected Products Counter + View Button) */
@@ -222,29 +224,53 @@
     /* Template Selector & Live Preview Screen */
     .template-scroll-body { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 130px; display: flex; flex-direction: column; gap: 20px; }
     .template-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; flex-shrink: 0; }
+    @media (min-width: 600px) { .template-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
     .tpl-option-card { background: var(--surface-color); border: 2px solid var(--border); border-radius: 16px; padding: 12px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 8px; position: relative; }
     .tpl-option-card.active { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(40,116,240,0.12); }
     .tpl-swatch { height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: space-between; padding: 0 12px; color: #fff; font-size: 11px; font-weight: 800; letter-spacing: 0.5px; }
     .tpl-name { font-size: 14px; font-weight: 800; color: var(--text-main); }
     .tpl-desc { font-size: 11px; font-weight: 600; color: var(--text-sub); line-height: 1.3; }
 
-    /* Live Needed List Preview Sheet (No Price Shown!) */
+    /* Live Needed List Preview Sheet (No Price Shown - Supports 6 Distinct Layouts!) */
     .preview-sheet-wrapper { background: #ffffff; color: #111111; border-radius: 18px; border: 1px solid var(--border); overflow: hidden; box-shadow: 0 8px 28px rgba(0,0,0,0.08); flex-shrink: 0; }
-    .preview-header { padding: 20px 18px; color: #ffffff; display: flex; flex-direction: column; gap: 6px; }
+    .preview-header { padding: 20px 18px; color: #ffffff; display: flex; flex-direction: column; gap: 6px; transition: background 0.25s ease; }
     .preview-shop-name { font-size: 20px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase; }
     .preview-doc-type { font-size: 13px; font-weight: 800; opacity: 0.95; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
     
-    .preview-list-body { padding: 12px 16px; display: flex; flex-direction: column; divide-y: 1px solid #e5e7eb; }
-    .preview-row { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 1px solid #e5e7eb; }
-    .preview-row:last-child { border-bottom: none; }
-    .preview-img { width: 58px; height: 58px; border-radius: 10px; object-fit: cover; background: #f3f4f6; border: 1px solid #e5e7eb; flex-shrink: 0; }
+    .preview-list-body { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    /* Layout 1: Left List */
+    .preview-row { display: flex; align-items: center; gap: 14px; padding: 12px; border: 1px solid #e5e7eb; border-radius: 12px; }
+    .preview-img { width: 64px; height: 64px; border-radius: 10px; object-fit: cover; background: #f3f4f6; border: 1px solid #e5e7eb; flex-shrink: 0; cursor: zoom-in; }
     .preview-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
     .preview-prod-name { font-size: 14px; font-weight: 800; color: #111827; line-height: 1.25; word-break: break-word; }
     .preview-prod-brand { font-size: 11px; font-weight: 800; color: #4b5563; text-transform: uppercase; }
     .preview-prod-desc { font-size: 12px; color: #6b7280; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; word-break: break-word; }
-    .preview-qty-box { min-width: 58px; padding: 8px 10px; border-radius: 10px; background: #f3f4f6; border: 1.5px solid #d1d5db; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
+    .preview-qty-box { min-width: 60px; padding: 8px 10px; border-radius: 10px; background: #f3f4f6; border: 1.5px solid #d1d5db; display: flex; flex-direction: column; align-items: center; justify-content: center; flex-shrink: 0; }
     .preview-qty-label { font-size: 9px; font-weight: 800; color: #6b7280; text-transform: uppercase; }
     .preview-qty-num { font-size: 16px; font-weight: 900; color: #111827; }
+
+    /* Layout 2: Big Image 2x2 Grid */
+    .preview-list-body.layout-big-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .preview-big-card { border: 1.5px solid #cbd5e1; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; background: #fff; }
+    .preview-big-img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; cursor: zoom-in; }
+    .preview-big-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 4px; flex: 1; }
+    .preview-big-qty { background: #4f46e5; color: #fff; font-weight: 900; font-size: 13px; padding: 8px; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* Layout 3: Right-Image Lookbook */
+    .preview-row.layout-right-row { flex-direction: row; text-align: right; border-left: 5px solid #991b1b; }
+    .preview-row.layout-right-row .preview-img { width: 88px; height: 88px; border-radius: 12px; }
+
+    /* Layout 4: Wholesale Dual-Column */
+    .preview-list-body.layout-dual-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .preview-compact-card { border: 1px solid #a7f3d0; background: #f0fdf4; border-radius: 10px; padding: 8px; display: flex; align-items: center; gap: 8px; }
+    .preview-compact-img { width: 44px; height: 44px; border-radius: 8px; object-fit: cover; flex-shrink: 0; background: #fff; cursor: zoom-in; }
+
+    /* Layout 5: Jumbo Hero Showcase */
+    .preview-jumbo-card { display: flex; gap: 14px; padding: 14px; border: 2px solid #f59e0b; border-radius: 16px; background: #fffbeb; align-items: center; }
+    .preview-jumbo-img { width: 115px; height: 115px; border-radius: 14px; object-fit: cover; flex-shrink: 0; border: 2px solid #d97706; cursor: zoom-in; }
+
+    /* Layout 6: Architectural Table */
+    .preview-table-row { display: grid; grid-template-columns: 32px 52px 1fr 64px; align-items: center; gap: 10px; padding: 10px 8px; border-bottom: 1.5px solid #111827; }
 
     /* Product Detail Parallax Scroll View */
     .fs-header-transparent { position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); z-index: 20; pointer-events: none; }
@@ -393,48 +419,64 @@
     </div>
   </div>
 
-  <!-- 2. Template Selection & Live Preview Modal (No Prices in PDF/Preview) -->
+  <!-- 2. Template Selection & Live Preview Modal (6 Distinct Templates, No Prices) -->
   <div class="fs-modal" id="modal-template-select">
     <div class="fs-header">
       <button class="btn-icon btn-close-modal">
         <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
       </button>
-      <div class="fs-title">Choose PDF Template</div>
+      <div class="fs-title">Choose PDF Template (6 Styles)</div>
     </div>
 
     <div class="template-scroll-body">
-      <!-- 4 Professional Template Cards -->
+      <!-- 6 Distinct Professional Template Cards -->
       <div class="template-grid" id="template-grid">
         <div class="tpl-option-card active" data-tpl="executive">
           <div class="tpl-swatch" style="background: linear-gradient(135deg, #1e3a8a, #2563eb);">
-            <span>AARVI</span><span>TPL 1</span>
+            <span>LEFT LIST</span><span>8 / PG</span>
           </div>
           <div class="tpl-name">1. Royal Executive</div>
-          <div class="tpl-desc">Deep navy corporate header with crisp bordered rows</div>
+          <div class="tpl-desc">Left square photo, center details & right bordered Qty box</div>
         </div>
 
-        <div class="tpl-option-card" data-tpl="minimal">
-          <div class="tpl-swatch" style="background: linear-gradient(135deg, #111827, #374151);">
-            <span>AARVI</span><span>TPL 2</span>
+        <div class="tpl-option-card" data-tpl="biggrid">
+          <div class="tpl-swatch" style="background: linear-gradient(135deg, #312e81, #4f46e5);">
+            <span>2x2 BIG IMG</span><span>4 / PG</span>
           </div>
-          <div class="tpl-name">2. Modern Minimal</div>
-          <div class="tpl-desc">High-contrast monochrome layout for clean printing</div>
+          <div class="tpl-name">2. Big Image Grid</div>
+          <div class="tpl-desc">Huge 2x2 product photos with centered title & bottom Qty bar</div>
+        </div>
+
+        <div class="tpl-option-card" data-tpl="rightlookbook">
+          <div class="tpl-swatch" style="background: linear-gradient(135deg, #7f1d1d, #dc2626);">
+            <span>RIGHT IMG</span><span>5 / PG</span>
+          </div>
+          <div class="tpl-name">3. Right Lookbook</div>
+          <div class="tpl-desc">Large right-aligned image, left Qty badge & right-aligned text</div>
         </div>
 
         <div class="tpl-option-card" data-tpl="wholesale">
           <div class="tpl-swatch" style="background: linear-gradient(135deg, #065f46, #10b981);">
-            <span>AARVI</span><span>TPL 3</span>
+            <span>2-COLUMN</span><span>12 / PG</span>
           </div>
-          <div class="tpl-name">3. Wholesale Ledger</div>
-          <div class="tpl-desc">Emerald stock-sheet grid with supplier check boxes</div>
+          <div class="tpl-name">4. Wholesale 2-Col</div>
+          <div class="tpl-desc">Compact dual-column stock grid for large wholesale orders</div>
         </div>
 
-        <div class="tpl-option-card" data-tpl="retail">
-          <div class="tpl-swatch" style="background: linear-gradient(135deg, #991b1b, #ef4444);">
-            <span>AARVI</span><span>TPL 4</span>
+        <div class="tpl-option-card" data-tpl="jumboshowcase">
+          <div class="tpl-swatch" style="background: linear-gradient(135deg, #78350f, #d97706);">
+            <span>JUMBO HERO</span><span>3 / PG</span>
           </div>
-          <div class="tpl-name">4. Crimson Retail</div>
-          <div class="tpl-desc">Bold crimson header with highlighted quantity blocks</div>
+          <div class="tpl-name">5. Jumbo Showcase</div>
+          <div class="tpl-desc">Extra-large product photos (3 per page) for maximum clarity</div>
+        </div>
+
+        <div class="tpl-option-card" data-tpl="minimaltable">
+          <div class="tpl-swatch" style="background: linear-gradient(135deg, #111827, #374151);">
+            <span>TABLE LEDGER</span><span>10 / PG</span>
+          </div>
+          <div class="tpl-name">6. Architectural Table</div>
+          <div class="tpl-desc">High-contrast numbered ledger with crisp column dividers</div>
         </div>
       </div>
 
@@ -448,14 +490,14 @@
           </div>
         </div>
         <div class="preview-list-body" id="preview-list-body">
-          <!-- Populated dynamically without price -->
+          <!-- Populated dynamically matching the active template layout -->
         </div>
       </div>
     </div>
 
     <div class="cart-bottom-bar">
       <div class="approx-total-block">
-        <div class="approx-label" id="pdf-est-pages-label">Estimated Pages</div>
+        <div class="approx-label" id="pdf-est-pages-label">15 Pages Max / PDF</div>
         <div class="approx-value" id="pdf-est-pages-val" style="font-size: 18px;">1 Page (1 PDF)</div>
       </div>
       <button class="btn-select-template" id="btn-download-pdf">
@@ -530,12 +572,15 @@
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const STORAGE_KEY = 'aarvi_pdf_selected_items';
-    const ITEMS_PER_PDF_PAGE = 8;
+    // Strictly 15 pages maximum per PDF file download to prevent RAM crashes
     const MAX_PAGES_PER_PDF_CHUNK = 15;
 
+    // 6 Distinct Professional Templates with unique layouts & itemsPerPage
     const TEMPLATES = {
       executive: {
         name: 'Royal Executive',
+        layout: 'left-list',
+        itemsPerPage: 8,
         headerBg: '#1e3a8a',
         accent: '#2563eb',
         rowBgEven: '#f8fafc',
@@ -543,17 +588,32 @@
         badgeBg: '#eff6ff',
         badgeText: '#1d4ed8'
       },
-      minimal: {
-        name: 'Modern Minimal',
-        headerBg: '#111827',
-        accent: '#374151',
-        rowBgEven: '#f9fafb',
-        borderColor: '#d1d5db',
-        badgeBg: '#f3f4f6',
-        badgeText: '#111827'
+      biggrid: {
+        name: 'Big Image Grid',
+        layout: 'big-grid',
+        itemsPerPage: 4,
+        headerBg: '#312e81',
+        accent: '#4f46e5',
+        rowBgEven: '#f5f3ff',
+        borderColor: '#c7d2fe',
+        badgeBg: '#4f46e5',
+        badgeText: '#ffffff'
+      },
+      rightlookbook: {
+        name: 'Right Lookbook',
+        layout: 'right-image',
+        itemsPerPage: 5,
+        headerBg: '#7f1d1d',
+        accent: '#dc2626',
+        rowBgEven: '#fef2f2',
+        borderColor: '#fecaca',
+        badgeBg: '#fef2f2',
+        badgeText: '#991b1b'
       },
       wholesale: {
-        name: 'Wholesale Ledger',
+        name: 'Wholesale 2-Col',
+        layout: 'dual-column',
+        itemsPerPage: 12,
         headerBg: '#065f46',
         accent: '#059669',
         rowBgEven: '#f0fdf4',
@@ -561,14 +621,27 @@
         badgeBg: '#ecfdf5',
         badgeText: '#065f46'
       },
-      retail: {
-        name: 'Crimson Retail',
-        headerBg: '#991b1b',
-        accent: '#dc2626',
-        rowBgEven: '#fef2f2',
-        borderColor: '#fecaca',
-        badgeBg: '#fef2f2',
-        badgeText: '#991b1b'
+      jumboshowcase: {
+        name: 'Jumbo Showcase',
+        layout: 'jumbo-hero',
+        itemsPerPage: 3,
+        headerBg: '#78350f',
+        accent: '#d97706',
+        rowBgEven: '#fffbeb',
+        borderColor: '#fde68a',
+        badgeBg: '#fef3c7',
+        badgeText: '#92400e'
+      },
+      minimaltable: {
+        name: 'Architectural Table',
+        layout: 'table-ledger',
+        itemsPerPage: 10,
+        headerBg: '#111827',
+        accent: '#374151',
+        rowBgEven: '#f9fafb',
+        borderColor: '#d1d5db',
+        badgeBg: '#111827',
+        badgeText: '#ffffff'
       }
     };
 
@@ -584,6 +657,10 @@
       selectedTemplate: 'executive',
       selectedItems: loadStoredItems()
     };
+
+    if (STATE.selectedItems.length > 0) {
+      STATE.selectionMode = true;
+    }
 
     function loadStoredItems() {
       try {
@@ -714,8 +791,31 @@
       return STATE.selectedItems.some(item => item.id === prodId);
     }
 
+    function addProductSelectionOnly(prod) {
+      if (!isProductSelected(prod.id)) {
+        if (navigator.vibrate) navigator.vibrate(22);
+        STATE.selectedItems.push({
+          id: prod.id,
+          name: prod.name || 'Unnamed Product',
+          price: Number(prod.price) || 0,
+          brand: prod.brand || '',
+          code: prod.code || '',
+          description: prod.description || '',
+          imageUrl: getProductImage(prod),
+          categoryId: prod.categoryId || STATE.activeCatId || '',
+          categoryName: STATE.activeCatName || '',
+          qty: 1
+        });
+      } else {
+        if (navigator.vibrate) navigator.vibrate(12);
+      }
+      STATE.selectionMode = true;
+      saveStoredItems();
+      syncVisibleCardsSelection();
+    }
+
     function toggleProductSelection(prod) {
-      if (navigator.vibrate) navigator.vibrate(18);
+      if (navigator.vibrate) navigator.vibrate(16);
       const idx = STATE.selectedItems.findIndex(item => item.id === prod.id);
 
       if (idx > -1) {
@@ -735,12 +835,7 @@
         });
       }
 
-      if (STATE.selectedItems.length > 0) {
-        STATE.selectionMode = true;
-      } else {
-        STATE.selectionMode = false;
-      }
-
+      STATE.selectionMode = STATE.selectedItems.length > 0;
       saveStoredItems();
       syncVisibleCardsSelection();
     }
@@ -748,7 +843,7 @@
     function syncVisibleCardsSelection() {
       if (STATE.selectionMode) {
         ui.feed.classList.add('selection-mode');
-        ui.selectionPill.innerText = 'Tap cards to select';
+        ui.selectionPill.innerText = 'Tap card to select • Tap pic to zoom';
       } else {
         ui.feed.classList.remove('selection-mode');
         ui.selectionPill.innerText = 'Hold product to select';
@@ -940,7 +1035,7 @@
               </div>
             </div>
             <div class="prod-img-wrap">
-              ${resolvedProdImg ? `<img class="prod-img" src="${resolvedProdImg}" onerror="this.style.display='none'">` : `<div class="prod-img" style="display:flex;align-items:center;justify-content:center;color:var(--text-sub);font-size:12px;font-weight:700;">No Img</div>`}
+              ${resolvedProdImg ? `<img class="prod-img" src="${resolvedProdImg}" onerror="this.style.display='none'"><span class="prod-img-zoom-hint">Zoom</span>` : `<div class="prod-img" style="display:flex;align-items:center;justify-content:center;color:var(--text-sub);font-size:12px;font-weight:700;">No Img</div>`}
               ${prod.brand ? `<div class="prod-brand">${prod.brand}</div>` : ''}
             </div>
             <div class="prod-info">
@@ -953,21 +1048,38 @@
             </div>
           `;
 
-          // Long-Press Detection (420ms) + Tap Handling
+          // Image Tap Handler: Opens Full-Screen Zoom with Mobile Back Button Support
+          const imgWrapEl = card.querySelector('.prod-img-wrap');
+          imgWrapEl.addEventListener('touchstart', (e) => {
+            e.stopPropagation();
+          }, { passive: true });
+
+          imgWrapEl.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (navigator.vibrate) navigator.vibrate(10);
+            if (resolvedProdImg) {
+              openZoomViewer(resolvedProdImg);
+            } else {
+              openProductDetail(prod);
+            }
+          });
+
+          // Fixed Long-Press Detection: Holding selects ONCE and never unselects while holding!
           let pressTimer = null;
-          let longPressTriggered = false;
+          let lastLongPressTime = 0;
           let startX = 0, startY = 0;
 
           const startPress = (e) => {
-            longPressTriggered = false;
+            if (e.target.closest('.prod-img-wrap')) return;
             if (e.touches && e.touches[0]) {
               startX = e.touches[0].clientX;
               startY = e.touches[0].clientY;
             }
             pressTimer = setTimeout(() => {
-              longPressTriggered = true;
-              STATE.selectionMode = true;
-              toggleProductSelection(prod);
+              pressTimer = null;
+              lastLongPressTime = Date.now();
+              // Strictly select and enter selection mode (never unselect on hold)
+              addProductSelectionOnly(prod);
             }, 420);
           };
 
@@ -991,17 +1103,17 @@
           card.addEventListener('touchend', cancelPress);
           card.addEventListener('touchcancel', cancelPress);
 
+          // Prevent native browser context menu without unselecting the product
           card.addEventListener('contextmenu', (e) => {
             e.preventDefault();
-            STATE.selectionMode = true;
-            toggleProductSelection(prod);
           });
 
+          // Tap anywhere else on card -> Select/Toggle product (or open detail if not selecting)
           card.addEventListener('click', (e) => {
-            if (longPressTriggered) {
-              longPressTriggered = false;
-              return;
-            }
+            if (e.target.closest('.prod-img-wrap')) return;
+            // Ignore synthetic click fired right after a long-press release
+            if (Date.now() - lastLongPressTime < 650) return;
+
             if (STATE.selectionMode || e.target.closest('.select-check-wrap')) {
               toggleProductSelection(prod);
             } else {
@@ -1128,6 +1240,7 @@
             STATE.selectedItems[index].qty -= 1;
           } else {
             STATE.selectedItems.splice(index, 1);
+            if (STATE.selectedItems.length === 0) STATE.selectionMode = false;
           }
           saveStoredItems();
           renderSelectedCartView();
@@ -1164,39 +1277,115 @@
       history.back();
     });
 
-    // --- 6. Template Selection & Live Preview (Strictly No Prices) ---
+    // --- 6. Template Selection & Live Preview (6 Distinct Layouts, Strictly No Prices) ---
     function renderLiveTemplatePreview() {
       const tpl = TEMPLATES[STATE.selectedTemplate] || TEMPLATES.executive;
       ui.previewHeaderBox.style.background = tpl.headerBg;
 
       const totalItems = STATE.selectedItems.length;
       const totalUnits = STATE.selectedItems.reduce((sum, i) => sum + (Number(i.qty) || 1), 0);
-      ui.previewMetaCount.innerText = `${totalItems} Products • ${totalUnits} Total Qty`;
+      ui.previewMetaCount.innerText = `${tpl.name} • ${totalItems} Products (${totalUnits} Qty)`;
 
-      const totalPages = Math.max(1, Math.ceil(totalItems / ITEMS_PER_PDF_PAGE));
+      const totalPages = Math.max(1, Math.ceil(totalItems / tpl.itemsPerPage));
       const totalPdfChunks = Math.max(1, Math.ceil(totalPages / MAX_PAGES_PER_PDF_CHUNK));
       ui.estPagesVal.innerText = `${totalPages} Page${totalPages > 1 ? 's' : ''} (${totalPdfChunks} PDF${totalPdfChunks > 1 ? 's' : ''})`;
 
       ui.previewListBody.innerHTML = '';
+      ui.previewListBody.className = 'preview-list-body';
+
+      if (tpl.layout === 'big-grid') {
+        ui.previewListBody.classList.add('layout-big-grid');
+      } else if (tpl.layout === 'dual-column') {
+        ui.previewListBody.classList.add('layout-dual-col');
+      }
 
       STATE.selectedItems.forEach((item, idx) => {
-        const row = document.createElement('div');
-        row.className = 'preview-row';
-        if (idx % 2 === 1) row.style.background = tpl.rowBgEven;
+        const el = document.createElement('div');
 
-        row.innerHTML = `
-          ${item.imageUrl ? `<img class="preview-img" src="${item.imageUrl}" onerror="this.style.display='none'">` : `<div class="preview-img" style="display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#6b7280;">NO IMG</div>`}
-          <div class="preview-info">
-            ${item.brand ? `<div class="preview-prod-brand" style="color:${tpl.accent};">${item.brand}</div>` : ''}
-            <div class="preview-prod-name">${item.name}</div>
-            ${item.description ? `<div class="preview-prod-desc">${item.description}</div>` : ''}
-          </div>
-          <div class="preview-qty-box" style="background:${tpl.badgeBg}; border-color:${tpl.borderColor};">
-            <span class="preview-qty-label" style="color:${tpl.badgeText};">QTY</span>
-            <span class="preview-qty-num" style="color:${tpl.badgeText};">${item.qty || 1}</span>
-          </div>
-        `;
-        ui.previewListBody.appendChild(row);
+        if (tpl.layout === 'big-grid') {
+          el.className = 'preview-big-card';
+          el.innerHTML = `
+            ${item.imageUrl ? `<img class="preview-big-img" src="${item.imageUrl}" onerror="this.style.display='none'">` : `<div class="preview-big-img" style="display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#6b7280;">NO IMG</div>`}
+            <div class="preview-big-body">
+              ${item.brand ? `<div class="preview-prod-brand" style="color:${tpl.accent};">${item.brand}</div>` : ''}
+              <div class="preview-prod-name">${item.name}</div>
+              ${item.description ? `<div class="preview-prod-desc">${item.description}</div>` : ''}
+            </div>
+            <div class="preview-big-qty" style="background:${tpl.accent};">NEEDED QTY: ${item.qty || 1}</div>
+          `;
+        } else if (tpl.layout === 'right-image') {
+          el.className = 'preview-row layout-right-row';
+          el.style.borderColor = tpl.borderColor;
+          el.style.borderLeftColor = tpl.accent;
+          if (idx % 2 === 1) el.style.background = tpl.rowBgEven;
+          el.innerHTML = `
+            <div class="preview-qty-box" style="background:${tpl.badgeBg}; border-color:${tpl.borderColor};">
+              <span class="preview-qty-label" style="color:${tpl.badgeText};">NEEDED</span>
+              <span class="preview-qty-num" style="color:${tpl.badgeText};">${item.qty || 1}</span>
+            </div>
+            <div class="preview-info" style="text-align:right; align-items:flex-end;">
+              ${item.brand ? `<div class="preview-prod-brand" style="color:${tpl.accent};">${item.brand}</div>` : ''}
+              <div class="preview-prod-name">${item.name}</div>
+              ${item.description ? `<div class="preview-prod-desc">${item.description}</div>` : ''}
+            </div>
+            ${item.imageUrl ? `<img class="preview-img" src="${item.imageUrl}" onerror="this.style.display='none'">` : `<div class="preview-img" style="display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#6b7280;">NO IMG</div>`}
+          `;
+        } else if (tpl.layout === 'dual-column') {
+          el.className = 'preview-compact-card';
+          el.innerHTML = `
+            ${item.imageUrl ? `<img class="preview-compact-img" src="${item.imageUrl}" onerror="this.style.display='none'">` : `<div class="preview-compact-img" style="display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;color:#6b7280;">IMG</div>`}
+            <div class="preview-info">
+              <div class="preview-prod-name" style="font-size:12px;">${item.name}</div>
+              ${item.brand ? `<div class="preview-prod-brand" style="font-size:9px; color:${tpl.accent};">${item.brand}</div>` : ''}
+            </div>
+            <div style="background:${tpl.headerBg}; color:#fff; font-weight:900; font-size:12px; padding:4px 8px; border-radius:6px;">x${item.qty || 1}</div>
+          `;
+        } else if (tpl.layout === 'jumbo-hero') {
+          el.className = 'preview-jumbo-card';
+          el.innerHTML = `
+            ${item.imageUrl ? `<img class="preview-jumbo-img" src="${item.imageUrl}" onerror="this.style.display='none'">` : `<div class="preview-jumbo-img" style="display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#92400e;">NO IMG</div>`}
+            <div class="preview-info">
+              ${item.brand ? `<div class="preview-prod-brand" style="color:${tpl.accent}; font-size:12px;">${item.brand}</div>` : ''}
+              <div class="preview-prod-name" style="font-size:16px;">${item.name}</div>
+              ${item.description ? `<div class="preview-prod-desc" style="font-size:13px;">${item.description}</div>` : ''}
+              <div style="margin-top:6px; display:inline-block; background:${tpl.headerBg}; color:#fff; font-weight:900; font-size:12px; padding:5px 10px; border-radius:8px; width:max-content;">NEEDED QTY: ${item.qty || 1}</div>
+            </div>
+          `;
+        } else if (tpl.layout === 'table-ledger') {
+          el.className = 'preview-table-row';
+          el.innerHTML = `
+            <div style="font-weight:900; font-size:12px; color:#111827;">#${String(idx + 1).padStart(2, '0')}</div>
+            ${item.imageUrl ? `<img class="preview-img" style="width:46px;height:46px;" src="${item.imageUrl}" onerror="this.style.display='none'">` : `<div class="preview-img" style="width:46px;height:46px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:800;">IMG</div>`}
+            <div class="preview-info">
+              <div class="preview-prod-name" style="font-size:13px;">${item.name}</div>
+              <div class="preview-prod-desc" style="font-size:11px;">${item.brand ? `[${item.brand}] ` : ''}${item.description || ''}</div>
+            </div>
+            <div style="background:#111827; color:#fff; font-weight:900; font-size:13px; padding:6px 0; border-radius:6px; text-align:center;">${item.qty || 1}</div>
+          `;
+        } else {
+          // Default Layout 1: Royal Executive (Left List)
+          el.className = 'preview-row';
+          if (idx % 2 === 1) el.style.background = tpl.rowBgEven;
+          el.innerHTML = `
+            ${item.imageUrl ? `<img class="preview-img" src="${item.imageUrl}" onerror="this.style.display='none'">` : `<div class="preview-img" style="display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#6b7280;">NO IMG</div>`}
+            <div class="preview-info">
+              ${item.brand ? `<div class="preview-prod-brand" style="color:${tpl.accent};">${item.brand}</div>` : ''}
+              <div class="preview-prod-name">${item.name}</div>
+              ${item.description ? `<div class="preview-prod-desc">${item.description}</div>` : ''}
+            </div>
+            <div class="preview-qty-box" style="background:${tpl.badgeBg}; border-color:${tpl.borderColor};">
+              <span class="preview-qty-label" style="color:${tpl.badgeText};">QTY</span>
+              <span class="preview-qty-num" style="color:${tpl.badgeText};">${item.qty || 1}</span>
+            </div>
+          `;
+        }
+
+        const previewImg = el.querySelector('img');
+        if (previewImg && item.imageUrl) {
+          previewImg.addEventListener('click', () => openZoomViewer(item.imageUrl));
+        }
+
+        ui.previewListBody.appendChild(el);
       });
     }
 
@@ -1216,7 +1405,7 @@
       });
     });
 
-    // --- 7. RAM-Safe Chunked PDF Engine (15 Pages Max Per PDF File) ---
+    // --- 7. RAM-Safe Chunked PDF Engine (6 Distinct Layouts, 15 Pages Max Per PDF) ---
     async function loadImageSafeForCanvas(url) {
       if (!url) return null;
       return new Promise((resolve) => {
@@ -1258,144 +1447,466 @@
       return lines;
     }
 
-    async function renderSinglePageToCanvas(canvas, ctx, pageItems, pageNumber, totalPages, tpl) {
+    async function drawImgOrPlaceholder(ctx, url, x, y, size, borderColor = '#e5e7eb') {
+      ctx.fillStyle = '#f3f4f6';
+      ctx.fillRect(x, y, size, size);
+      const loadedImg = await loadImageSafeForCanvas(url);
+      if (loadedImg) {
+        ctx.drawImage(loadedImg, x, y, size, size);
+      } else {
+        ctx.fillStyle = '#9ca3af';
+        ctx.font = '800 18px system-ui, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('NO IMG', x + size / 2, y + size / 2 + 6);
+        ctx.textAlign = 'left';
+      }
+      ctx.strokeStyle = borderColor;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x, y, size, size);
+    }
+
+    async function renderSinglePageToCanvas(canvas, ctx, pageItems, pageNumber, totalPages, tpl, startSerialIndex) {
       const W = canvas.width;   // 1240 px (A4 @ 150 DPI)
       const H = canvas.height;  // 1754 px
 
-      // Clear & Fill Page Background
       ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, W, H);
 
       // 1. Draw Template Header ("Aarvi Superstores - Product Needed List")
       ctx.fillStyle = tpl.headerBg;
-      ctx.fillRect(0, 0, W, 195);
-
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '900 46px system-ui, -apple-system, sans-serif';
-      ctx.fillText('AARVI SUPERSTORES', 60, 88);
-
-      ctx.font = '800 24px system-ui, -apple-system, sans-serif';
-      ctx.fillStyle = '#e2e8f0';
-      ctx.fillText('PRODUCT NEEDED LIST', 60, 136);
+      ctx.fillRect(0, 0, W, 190);
 
       const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
-      ctx.textAlign = 'right';
-      ctx.font = '700 22px system-ui, -apple-system, sans-serif';
-      ctx.fillText(`Date: ${dateStr}`, W - 60, 86);
-      ctx.fillText(`Page ${pageNumber} of ${totalPages}`, W - 60, 134);
-      ctx.textAlign = 'left';
 
-      // Accent Stripe
+      if (tpl.layout === 'big-grid' || tpl.layout === 'jumbo-hero') {
+        // Centered Luxury Header Alignment
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 48px system-ui, -apple-system, sans-serif';
+        ctx.fillText('AARVI SUPERSTORES', W / 2, 82);
+        ctx.font = '800 24px system-ui, -apple-system, sans-serif';
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText(`PRODUCT NEEDED LIST  •  ${dateStr}  •  PAGE ${pageNumber} OF ${totalPages}`, W / 2, 136);
+        ctx.textAlign = 'left';
+      } else {
+        // Standard Corporate Split Header
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '900 46px system-ui, -apple-system, sans-serif';
+        ctx.fillText('AARVI SUPERSTORES', 55, 86);
+        ctx.font = '800 24px system-ui, -apple-system, sans-serif';
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillText('PRODUCT NEEDED LIST', 55, 134);
+
+        ctx.textAlign = 'right';
+        ctx.font = '700 22px system-ui, -apple-system, sans-serif';
+        ctx.fillText(`Date: ${dateStr}`, W - 55, 84);
+        ctx.fillText(`Page ${pageNumber} of ${totalPages}`, W - 55, 132);
+        ctx.textAlign = 'left';
+      }
+
       ctx.fillStyle = tpl.accent;
-      ctx.fillRect(0, 185, W, 10);
+      ctx.fillRect(0, 180, W, 10);
 
-      // 2. Draw Up to 8 Product Rows (Strictly NO Price)
-      let yCursor = 225;
-      const rowHeight = 175;
       const padX = 55;
-      const rowWidth = W - padX * 2;
+      const contentW = W - padX * 2;
 
-      for (let i = 0; i < pageItems.length; i++) {
-        const item = pageItems[i];
+      // 2. Render Body According to Selected Template's Distinct Layout
+      if (tpl.layout === 'big-grid') {
+        // TEMPLATE 2: 2x2 Big Image Grid (4 items/page, huge 430x430 images)
+        const cardW = (contentW - 40) / 2;
+        const cardH = 690;
+        for (let i = 0; i < pageItems.length; i++) {
+          const item = pageItems[i];
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const x = padX + col * (cardW + 40);
+          const y = 220 + row * (cardH + 35);
 
-        // Alternating Row Fill
-        ctx.fillStyle = i % 2 === 0 ? '#ffffff' : tpl.rowBgEven;
-        ctx.fillRect(padX, yCursor, rowWidth, rowHeight - 10);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, y, cardW, cardH);
+          ctx.strokeStyle = tpl.borderColor;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(x, y, cardW, cardH);
 
-        // Row Border
-        ctx.strokeStyle = tpl.borderColor;
-        ctx.lineWidth = 2;
-        ctx.strokeRect(padX, yCursor, rowWidth, rowHeight - 10);
+          // Huge Square Product Image (430x430 centered in card)
+          const imgSize = 430;
+          const imgX = x + (cardW - imgSize) / 2;
+          const imgY = y + 22;
+          await drawImgOrPlaceholder(ctx, item.imageUrl, imgX, imgY, imgSize, tpl.borderColor);
 
-        // Left Accent Bar on Retail/Wholesale templates
-        if (STATE.selectedTemplate === 'retail' || STATE.selectedTemplate === 'wholesale') {
-          ctx.fillStyle = tpl.accent;
-          ctx.fillRect(padX, yCursor, 8, rowHeight - 10);
-        }
-
-        // Left Product Picture (130x130 square)
-        const imgX = padX + 22;
-        const imgY = yCursor + 17;
-        const imgSize = 130;
-
-        ctx.fillStyle = '#f3f4f6';
-        ctx.fillRect(imgX, imgY, imgSize, imgSize);
-
-        const loadedImg = await loadImageSafeForCanvas(item.imageUrl);
-        if (loadedImg) {
-          ctx.drawImage(loadedImg, imgX, imgY, imgSize, imgSize);
-        } else {
-          ctx.fillStyle = '#9ca3af';
-          ctx.font = '800 18px system-ui, sans-serif';
+          // Centered Brand, Name, Description
           ctx.textAlign = 'center';
-          ctx.fillText('NO IMG', imgX + imgSize / 2, imgY + imgSize / 2 + 6);
+          let textY = imgY + imgSize + 38;
+          if (item.brand) {
+            ctx.fillStyle = tpl.accent;
+            ctx.font = '800 20px system-ui, sans-serif';
+            ctx.fillText(String(item.brand).toUpperCase(), x + cardW / 2, textY);
+            textY += 32;
+          }
+          ctx.fillStyle = '#111827';
+          ctx.font = '800 26px system-ui, sans-serif';
+          const nameLines = wrapCanvasText(ctx, item.name || 'Product', cardW - 40, 1);
+          if (nameLines[0]) ctx.fillText(nameLines[0], x + cardW / 2, textY);
+          textY += 30;
+
+          if (item.description) {
+            ctx.fillStyle = '#4b5563';
+            ctx.font = '500 19px system-ui, sans-serif';
+            const descLines = wrapCanvasText(ctx, item.description, cardW - 40, 2);
+            descLines.forEach(l => {
+              ctx.fillText(l, x + cardW / 2, textY);
+              textY += 24;
+            });
+          }
+
+          // Bottom Full-Width Needed Qty Bar
+          const barH = 68;
+          ctx.fillStyle = tpl.accent;
+          ctx.fillRect(x, y + cardH - barH, cardW, barH);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 26px system-ui, sans-serif';
+          ctx.fillText(`NEEDED QTY: ${item.qty || 1}`, x + cardW / 2, y + cardH - 24);
           ctx.textAlign = 'left';
         }
+      } else if (tpl.layout === 'right-image') {
+        // TEMPLATE 3: Right-Aligned Lookbook (5 items/page, 215x215 image on RIGHT, Qty on LEFT)
+        let yCursor = 225;
+        const rowH = 280;
+        for (let i = 0; i < pageItems.length; i++) {
+          const item = pageItems[i];
+          ctx.fillStyle = i % 2 === 0 ? '#ffffff' : tpl.rowBgEven;
+          ctx.fillRect(padX, yCursor, contentW, rowH - 16);
+          ctx.strokeStyle = tpl.borderColor;
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(padX, yCursor, contentW, rowH - 16);
 
-        ctx.strokeStyle = '#e5e7eb';
-        ctx.lineWidth = 1.5;
-        ctx.strokeRect(imgX, imgY, imgSize, imgSize);
-
-        // Text Details Column (Brand, Name, Description)
-        const textX = imgX + imgSize + 28;
-        const maxTextW = rowWidth - (imgSize + 240);
-        let textY = yCursor + 42;
-
-        if (item.brand) {
           ctx.fillStyle = tpl.accent;
-          ctx.font = '800 19px system-ui, sans-serif';
-          ctx.fillText(String(item.brand).toUpperCase(), textX, textY);
-          textY += 32;
-        } else {
-          textY += 8;
+          ctx.fillRect(padX, yCursor, 12, rowH - 16);
+
+          // Left Needed Qty Box
+          const qtyX = padX + 34;
+          const qtyY = yCursor + 48;
+          const qtyW = 160;
+          const qtyH = 165;
+          ctx.fillStyle = tpl.badgeBg;
+          ctx.fillRect(qtyX, qtyY, qtyW, qtyH);
+          ctx.strokeStyle = tpl.accent;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(qtyX, qtyY, qtyW, qtyH);
+
+          ctx.textAlign = 'center';
+          ctx.fillStyle = tpl.badgeText;
+          ctx.font = '800 20px system-ui, sans-serif';
+          ctx.fillText('NEEDED QTY', qtyX + qtyW / 2, qtyY + 52);
+          ctx.font = '900 52px system-ui, sans-serif';
+          ctx.fillText(String(item.qty || 1), qtyX + qtyW / 2, qtyY + 125);
+
+          // Large Right-Side Image (215x215)
+          const imgSize = 215;
+          const imgX = padX + contentW - imgSize - 24;
+          const imgY = yCursor + 24;
+          await drawImgOrPlaceholder(ctx, item.imageUrl, imgX, imgY, imgSize, tpl.borderColor);
+
+          // Right-Aligned Details in Center
+          const textRightX = imgX - 32;
+          const maxTextW = contentW - imgSize - qtyW - 120;
+          ctx.textAlign = 'right';
+          let textY = yCursor + 65;
+
+          if (item.brand) {
+            ctx.fillStyle = tpl.accent;
+            ctx.font = '800 22px system-ui, sans-serif';
+            ctx.fillText(String(item.brand).toUpperCase(), textRightX, textY);
+            textY += 38;
+          }
+          ctx.fillStyle = '#111827';
+          ctx.font = '900 30px system-ui, sans-serif';
+          const nameLines = wrapCanvasText(ctx, item.name || 'Product', maxTextW, 2);
+          nameLines.forEach(l => {
+            ctx.fillText(l, textRightX, textY);
+            textY += 36;
+          });
+
+          if (item.description) {
+            ctx.fillStyle = '#4b5563';
+            ctx.font = '500 22px system-ui, sans-serif';
+            const descLines = wrapCanvasText(ctx, item.description, maxTextW, 2);
+            descLines.forEach(l => {
+              ctx.fillText(l, textRightX, textY);
+              textY += 28;
+            });
+          }
+          ctx.textAlign = 'left';
+          yCursor += rowH;
         }
+      } else if (tpl.layout === 'dual-column') {
+        // TEMPLATE 4: Wholesale 2-Column (12 items/page, 2x6 compact grid)
+        const colW = (contentW - 28) / 2;
+        const rowH = 235;
+        for (let i = 0; i < pageItems.length; i++) {
+          const item = pageItems[i];
+          const col = i % 2;
+          const row = Math.floor(i / 2);
+          const x = padX + col * (colW + 28);
+          const y = 220 + row * rowH;
 
-        // Product Name
-        ctx.fillStyle = '#111827';
-        ctx.font = '800 26px system-ui, sans-serif';
-        const nameLines = wrapCanvasText(ctx, item.name || 'Product', maxTextW, 1);
-        if (nameLines[0]) ctx.fillText(nameLines[0], textX, textY);
-        textY += 34;
+          ctx.fillStyle = row % 2 === 0 ? '#ffffff' : tpl.rowBgEven;
+          ctx.fillRect(x, y, colW, rowH - 14);
+          ctx.strokeStyle = tpl.borderColor;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x, y, colW, rowH - 14);
 
-        // Product Description
-        if (item.description) {
-          ctx.fillStyle = '#4b5563';
-          ctx.font = '500 20px system-ui, sans-serif';
-          const descLines = wrapCanvasText(ctx, item.description, maxTextW, 2);
-          descLines.forEach(line => {
-            ctx.fillText(line, textX, textY);
+          const imgSize = 145;
+          await drawImgOrPlaceholder(ctx, item.imageUrl, x + 16, y + 18, imgSize, tpl.borderColor);
+
+          const textX = x + imgSize + 32;
+          const maxW = colW - imgSize - 50;
+          let textY = y + 42;
+
+          if (item.brand) {
+            ctx.fillStyle = tpl.accent;
+            ctx.font = '800 17px system-ui, sans-serif';
+            ctx.fillText(String(item.brand).toUpperCase(), textX, textY);
+            textY += 26;
+          }
+          ctx.fillStyle = '#111827';
+          ctx.font = '800 22px system-ui, sans-serif';
+          const nameLines = wrapCanvasText(ctx, item.name || 'Product', maxW, 2);
+          nameLines.forEach(l => {
+            ctx.fillText(l, textX, textY);
             textY += 26;
           });
+
+          if (item.description) {
+            ctx.fillStyle = '#4b5563';
+            ctx.font = '500 17px system-ui, sans-serif';
+            const descLines = wrapCanvasText(ctx, item.description, maxW, 1);
+            if (descLines[0]) ctx.fillText(descLines[0], textX, textY);
+          }
+
+          // Bottom Right Qty Pill inside cell
+          ctx.fillStyle = tpl.headerBg;
+          ctx.fillRect(textX, y + rowH - 64, maxW, 38);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 20px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`NEEDED QTY: ${item.qty || 1}`, textX + maxW / 2, y + rowH - 38);
+          ctx.textAlign = 'left';
         }
+      } else if (tpl.layout === 'jumbo-hero') {
+        // TEMPLATE 5: Jumbo Hero Showcase (3 items/page, massive 390x390 images)
+        let yCursor = 225;
+        const cardH = 470;
+        for (let i = 0; i < pageItems.length; i++) {
+          const item = pageItems[i];
+          ctx.fillStyle = i % 2 === 0 ? '#ffffff' : tpl.rowBgEven;
+          ctx.fillRect(padX, yCursor, contentW, cardH - 22);
+          ctx.strokeStyle = tpl.accent;
+          ctx.lineWidth = 3;
+          ctx.strokeRect(padX, yCursor, contentW, cardH - 22);
 
-        // Right Qty Badge Box
-        const qtyBoxW = 140;
-        const qtyBoxH = 110;
-        const qtyBoxX = padX + rowWidth - qtyBoxW - 24;
-        const qtyBoxY = yCursor + 27;
+          const imgSize = 390;
+          await drawImgOrPlaceholder(ctx, item.imageUrl, padX + 28, yCursor + 28, imgSize, tpl.accent);
 
-        ctx.fillStyle = tpl.badgeBg;
-        ctx.fillRect(qtyBoxX, qtyBoxY, qtyBoxW, qtyBoxH);
-        ctx.strokeStyle = tpl.accent;
-        ctx.lineWidth = 2.5;
-        ctx.strokeRect(qtyBoxX, qtyBoxY, qtyBoxW, qtyBoxH);
+          const textX = padX + imgSize + 58;
+          const maxW = contentW - imgSize - 90;
+          let textY = yCursor + 72;
 
+          if (item.brand) {
+            ctx.fillStyle = tpl.accent;
+            ctx.font = '900 24px system-ui, sans-serif';
+            ctx.fillText(String(item.brand).toUpperCase(), textX, textY);
+            textY += 42;
+          }
+          ctx.fillStyle = '#111827';
+          ctx.font = '900 36px system-ui, sans-serif';
+          const nameLines = wrapCanvasText(ctx, item.name || 'Product', maxW, 2);
+          nameLines.forEach(l => {
+            ctx.fillText(l, textX, textY);
+            textY += 44;
+          });
+
+          if (item.description) {
+            ctx.fillStyle = '#4b5563';
+            ctx.font = '500 24px system-ui, sans-serif';
+            const descLines = wrapCanvasText(ctx, item.description, maxW, 3);
+            descLines.forEach(l => {
+              ctx.fillText(l, textX, textY);
+              textY += 32;
+            });
+          }
+
+          // Giant Needed Qty Stamp at Bottom Right of Hero Card
+          const stampW = 300;
+          const stampH = 85;
+          const stampX = padX + contentW - stampW - 32;
+          const stampY = yCursor + cardH - stampH - 50;
+          ctx.fillStyle = tpl.headerBg;
+          ctx.fillRect(stampX, stampY, stampW, stampH);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 32px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`NEEDED QTY: ${item.qty || 1}`, stampX + stampW / 2, stampY + 54);
+          ctx.textAlign = 'left';
+
+          yCursor += cardH;
+        }
+      } else if (tpl.layout === 'table-ledger') {
+        // TEMPLATE 6: Architectural Table Ledger (10 items/page, structured columns)
+        let yCursor = 215;
+        // Table Column Header Bar
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(padX, yCursor, contentW, 52);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '800 20px system-ui, sans-serif';
+        ctx.fillText('S.NO', padX + 20, yCursor + 34);
+        ctx.fillText('PHOTO', padX + 115, yCursor + 34);
+        ctx.fillText('PRODUCT & DESCRIPTION', padX + 260, yCursor + 34);
+        ctx.fillText('BRAND', padX + 770, yCursor + 34);
         ctx.textAlign = 'center';
-        ctx.fillStyle = tpl.badgeText;
-        ctx.font = '800 18px system-ui, sans-serif';
-        ctx.fillText('NEEDED QTY', qtyBoxX + qtyBoxW / 2, qtyBoxY + 36);
-
-        ctx.font = '900 38px system-ui, sans-serif';
-        ctx.fillText(String(item.qty || 1), qtyBoxX + qtyBoxW / 2, qtyBoxY + 86);
+        ctx.fillText('NEEDED QTY', padX + contentW - 100, yCursor + 34);
         ctx.textAlign = 'left';
 
-        yCursor += rowHeight;
+        yCursor += 52;
+        const rowH = 138;
+
+        for (let i = 0; i < pageItems.length; i++) {
+          const item = pageItems[i];
+          const serial = startSerialIndex + i + 1;
+          ctx.fillStyle = i % 2 === 0 ? '#ffffff' : '#f3f4f6';
+          ctx.fillRect(padX, yCursor, contentW, rowH);
+          ctx.strokeStyle = '#111827';
+          ctx.lineWidth = 1.5;
+          ctx.strokeRect(padX, yCursor, contentW, rowH);
+
+          // Serial Number
+          ctx.fillStyle = '#111827';
+          ctx.font = '900 24px system-ui, sans-serif';
+          ctx.fillText(`#${String(serial).padStart(2, '0')}`, padX + 20, yCursor + 78);
+
+          // Thumbnail (106x106)
+          await drawImgOrPlaceholder(ctx, item.imageUrl, padX + 105, yCursor + 16, 106, '#9ca3af');
+
+          // Product Name & Description
+          ctx.fillStyle = '#111827';
+          ctx.font = '800 24px system-ui, sans-serif';
+          const nameLines = wrapCanvasText(ctx, item.name || 'Product', 480, 1);
+          if (nameLines[0]) ctx.fillText(nameLines[0], padX + 240, yCursor + 55);
+
+          if (item.description) {
+            ctx.fillStyle = '#4b5563';
+            ctx.font = '500 19px system-ui, sans-serif';
+            const descLines = wrapCanvasText(ctx, item.description, 480, 2);
+            descLines.forEach((l, dIdx) => {
+              ctx.fillText(l, padX + 240, yCursor + 88 + dIdx * 24);
+            });
+          }
+
+          // Brand Column
+          ctx.fillStyle = '#111827';
+          ctx.font = '800 20px system-ui, sans-serif';
+          const brandLines = wrapCanvasText(ctx, item.brand ? String(item.brand).toUpperCase() : '-', 150, 1);
+          if (brandLines[0]) ctx.fillText(brandLines[0], padX + 770, yCursor + 76);
+
+          // Needed Qty Box
+          ctx.fillStyle = '#111827';
+          ctx.fillRect(padX + contentW - 165, yCursor + 24, 130, 90);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 34px system-ui, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(String(item.qty || 1), padX + contentW - 100, yCursor + 82);
+          ctx.textAlign = 'left';
+
+          yCursor += rowH;
+        }
+      } else {
+        // TEMPLATE 1: Royal Executive (8 items/page, left 130x130 image)
+        let yCursor = 225;
+        const rowHeight = 175;
+        for (let i = 0; i < pageItems.length; i++) {
+          const item = pageItems[i];
+          ctx.fillStyle = i % 2 === 0 ? '#ffffff' : tpl.rowBgEven;
+          ctx.fillRect(padX, yCursor, contentW, rowHeight - 10);
+          ctx.strokeStyle = tpl.borderColor;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(padX, yCursor, contentW, rowHeight - 10);
+
+          const imgX = padX + 22;
+          const imgY = yCursor + 17;
+          const imgSize = 130;
+          await drawImgOrPlaceholder(ctx, item.imageUrl, imgX, imgY, imgSize, '#e5e7eb');
+
+          const textX = imgX + imgSize + 28;
+          const maxTextW = contentW - (imgSize + 240);
+          let textY = yCursor + 42;
+
+          if (item.brand) {
+            ctx.fillStyle = tpl.accent;
+            ctx.font = '800 19px system-ui, sans-serif';
+            ctx.fillText(String(item.brand).toUpperCase(), textX, textY);
+            textY += 32;
+          } else {
+            textY += 8;
+          }
+
+          ctx.fillStyle = '#111827';
+          ctx.font = '800 26px system-ui, sans-serif';
+          const nameLines = wrapCanvasText(ctx, item.name || 'Product', maxTextW, 1);
+          if (nameLines[0]) ctx.fillText(nameLines[0], textX, textY);
+          textY += 34;
+
+          if (item.description) {
+            ctx.fillStyle = '#4b5563';
+            ctx.font = '500 20px system-ui, sans-serif';
+            const descLines = wrapCanvasText(ctx, item.description, maxTextW, 2);
+            descLines.forEach(line => {
+              ctx.fillText(line, textX, textY);
+              textY += 26;
+            });
+          }
+
+          const qtyBoxW = 140;
+          const qtyBoxH = 110;
+          const qtyBoxX = padX + contentW - qtyBoxW - 24;
+          const qtyBoxY = yCursor + 27;
+
+          ctx.fillStyle = tpl.badgeBg;
+          ctx.fillRect(qtyBoxX, qtyBoxY, qtyBoxW, qtyBoxH);
+          ctx.strokeStyle = tpl.accent;
+          ctx.lineWidth = 2.5;
+          ctx.strokeRect(qtyBoxX, qtyBoxY, qtyBoxW, qtyBoxH);
+
+          ctx.textAlign = 'center';
+          ctx.fillStyle = tpl.badgeText;
+          ctx.font = '800 18px system-ui, sans-serif';
+          ctx.fillText('NEEDED QTY', qtyBoxX + qtyBoxW / 2, qtyBoxY + 36);
+          ctx.font = '900 38px system-ui, sans-serif';
+          ctx.fillText(String(item.qty || 1), qtyBoxX + qtyBoxW / 2, qtyBoxY + 86);
+          ctx.textAlign = 'left';
+
+          yCursor += rowHeight;
+        }
       }
 
       // Footer
       ctx.fillStyle = '#6b7280';
       ctx.font = '700 18px system-ui, sans-serif';
-      ctx.fillText('Aarvi Superstores • Official Product Needed List', padX, H - 35);
+      ctx.fillText(`Aarvi Superstores • Product Needed List (${tpl.name})`, padX, H - 30);
+    }
+
+    function clearSelectionAndCloseModalsAfterDownload() {
+      STATE.selectedItems = [];
+      STATE.selectionMode = false;
+      localStorage.removeItem(STORAGE_KEY);
+      updateSelectionUI();
+      syncVisibleCardsSelection();
+      renderSelectedCartView();
+
+      // Close open template and cart modals cleanly
+      while (STATE.modalStack.length > 0) {
+        const top = STATE.modalStack.pop();
+        closeModalUI(top);
+      }
     }
 
     document.getElementById('btn-download-pdf').addEventListener('click', async () => {
@@ -1406,9 +1917,11 @@
 
       const { jsPDF } = window.jspdf;
       const tpl = TEMPLATES[STATE.selectedTemplate] || TEMPLATES.executive;
-      const items = STATE.selectedItems;
+      const items = [...STATE.selectedItems];
+      const itemsPerPage = tpl.itemsPerPage;
 
-      const totalPages = Math.ceil(items.length / ITEMS_PER_PDF_PAGE);
+      // Total pages based on the selected template's itemsPerPage, chunked strictly at 15 PAGES per PDF
+      const totalPages = Math.ceil(items.length / itemsPerPage);
       const totalChunks = Math.ceil(totalPages / MAX_PAGES_PER_PDF_CHUNK);
 
       ui.progressOverlay.classList.add('active');
@@ -1419,6 +1932,8 @@
       workCanvas.width = 1240;
       workCanvas.height = 1754;
       const ctx = workCanvas.getContext('2d');
+
+      let downloadCompletedSuccessfully = false;
 
       try {
         let globalPageCounter = 0;
@@ -1447,12 +1962,18 @@
             // Yield to browser thread so UI updates smoothly and garbage collector runs
             await new Promise(r => setTimeout(r, 45));
 
-            const pageSlice = items.slice(
-              pageIdx * ITEMS_PER_PDF_PAGE,
-              (pageIdx + 1) * ITEMS_PER_PDF_PAGE
-            );
+            const startItemIdx = pageIdx * itemsPerPage;
+            const pageSlice = items.slice(startItemIdx, startItemIdx + itemsPerPage);
 
-            await renderSinglePageToCanvas(workCanvas, ctx, pageSlice, globalPageCounter, totalPages, tpl);
+            await renderSinglePageToCanvas(
+              workCanvas,
+              ctx,
+              pageSlice,
+              globalPageCounter,
+              totalPages,
+              tpl,
+              startItemIdx
+            );
 
             const pageJpegData = workCanvas.toDataURL('image/jpeg', 0.84);
             if (pageIdx > startPage) pdf.addPage();
@@ -1465,12 +1986,14 @@
 
           pdf.save(fileName);
 
-          // Pause between multi-file downloads so mobile browsers don't block the second file
+          // Pause between multi-file downloads so mobile browsers don't block subsequent files
           if (chunkNum < totalChunks) {
-            ui.statusSub.innerText = `Saved Part ${chunkNum}/${totalChunks}. Preparing next chunk...`;
-            await new Promise(r => setTimeout(r, 900));
+            ui.statusSub.innerText = `Saved Part ${chunkNum}/${totalChunks}. Preparing next 15-page PDF...`;
+            await new Promise(r => setTimeout(r, 950));
           }
         }
+
+        downloadCompletedSuccessfully = true;
       } catch (err) {
         console.error('PDF generation failed:', err);
         alert('Error generating PDF. Please try again.');
@@ -1480,6 +2003,9 @@
         setTimeout(() => {
           ui.progressOverlay.classList.remove('active');
           ui.barFill.style.width = '0%';
+          if (downloadCompletedSuccessfully) {
+            clearSelectionAndCloseModalsAfterDownload();
+          }
         }, 400);
       }
     });
