@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f1f3f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <title>Settings - Aarvi Stores</title>
 
   <style>
@@ -15,8 +15,7 @@
       --text-sub: #666666;
       --border: #e0e0e0;
       --primary: #2874f0;
-      --danger: #d32f2f;
-      --danger-bg: #ffebee;
+      --danger: #dc3545;
       --input-bg: #f9f9f9;
     }
 
@@ -27,7 +26,7 @@
         --text-main: #ffffff;
         --text-sub: #a0a0a0;
         --border: #333333;
-        --danger-bg: #2c0b0e;
+        --danger: #fa5252;
         --input-bg: #1e1e1e;
       }
     }
@@ -51,67 +50,61 @@
       overflow-x: hidden;
     }
 
-    /* --- Page Header with Mobile Back Button --- */
-    .page-header {
-      position: sticky;
-      top: 0;
-      background-color: var(--surface-color);
-      height: 60px;
-      display: flex;
-      align-items: center;
-      padding: 0 16px;
-      border-bottom: 1px solid var(--border);
-      z-index: 10;
-    }
-
-    .back-btn {
+    /* --- Floating Back Button (No Header) --- */
+    .floating-back {
+      position: absolute;
+      top: calc(16px + env(safe-area-inset-top));
+      left: 16px;
       width: 40px;
       height: 40px;
       border-radius: 50%;
-      border: none;
-      background: transparent;
-      color: var(--text-main);
+      background-color: var(--surface-color);
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
       display: flex;
       align-items: center;
       justify-content: center;
+      border: none;
+      color: var(--text-main);
       cursor: pointer;
-      margin-right: 12px;
-      transition: background-color 0.2s;
+      z-index: 10;
+      transition: transform 0.2s, background-color 0.2s;
     }
 
-    .back-btn:active { background-color: var(--bg-color); }
-    .back-btn svg { width: 24px; height: 24px; fill: currentColor; pointer-events: none; }
+    .floating-back:active {
+      transform: scale(0.92);
+      background-color: var(--bg-color);
+    }
     
-    .page-title { font-size: 18px; font-weight: 700; }
+    .floating-back svg { width: 22px; height: 22px; fill: currentColor; pointer-events: none; }
 
-    /* --- Main Content --- */
+    /* --- Main Layout --- */
     .container {
       max-width: 600px;
       margin: 0 auto;
-      padding: 20px 16px;
-      animation: fadeIn 0.4s ease;
+      padding: calc(76px + env(safe-area-inset-top)) 16px 24px 16px;
+      animation: fadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
+      from { opacity: 0; transform: translateY(15px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     /* --- Profile Card --- */
     .profile-card {
       background-color: var(--surface-color);
-      border-radius: 16px;
-      padding: 20px;
+      border-radius: 20px;
+      padding: 24px;
       display: flex;
       align-items: center;
-      gap: 16px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      gap: 18px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
       margin-bottom: 24px;
     }
 
     .profile-pic-wrapper {
-      width: 70px;
-      height: 70px;
+      width: 76px;
+      height: 76px;
       border-radius: 50%;
       flex-shrink: 0; 
       background-color: var(--border);
@@ -126,7 +119,7 @@
 
     .profile-info {
       flex: 1;
-      min-width: 0; /* CRITICAL: Enables truncation for long text */
+      min-width: 0; 
     }
 
     .name-row {
@@ -137,28 +130,32 @@
     }
 
     .user-name {
-      font-size: 18px;
+      font-size: 20px;
       font-weight: 700;
       color: var(--text-main);
       word-wrap: break-word;
       word-break: break-word;
-      line-height: 1.3;
-      margin-bottom: 4px;
+      line-height: 1.2;
+      margin-bottom: 6px;
     }
 
     .edit-btn {
-      background: transparent;
+      background: rgba(40, 116, 240, 0.1);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
       border: none;
       color: var(--primary);
       flex-shrink: 0;
-      padding: 4px;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: background-color 0.2s;
     }
     
-    .edit-btn svg { width: 20px; height: 20px; fill: currentColor; pointer-events: none; }
+    .edit-btn:active { background: rgba(40, 116, 240, 0.2); }
+    .edit-btn svg { width: 16px; height: 16px; fill: currentColor; pointer-events: none; }
 
     .user-email {
       font-size: 14px;
@@ -166,83 +163,101 @@
       word-break: break-all;
     }
 
-    /* --- Settings List --- */
-    .settings-group {
+    /* --- Clean Action Group (Only Logout) --- */
+    .action-group {
       background-color: var(--surface-color);
       border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-      margin-bottom: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.04);
     }
 
-    .settings-item {
+    .action-item {
       display: flex;
       align-items: center;
-      padding: 16px 20px;
+      justify-content: center;
+      padding: 18px 20px;
       background: transparent;
       border: none;
       width: 100%;
-      text-align: left;
       font-size: 16px;
-      font-weight: 500;
-      color: var(--text-main);
+      font-weight: 600;
       cursor: pointer;
       transition: background-color 0.2s;
+      color: var(--danger);
     }
 
-    .settings-item:not(:last-child) { border-bottom: 1px solid var(--border); }
-    .settings-item:active { background-color: var(--bg-color); }
-
-    .settings-item svg {
-      width: 22px; height: 22px; fill: var(--text-sub); margin-right: 16px; pointer-events: none;
+    .action-item:active { background-color: rgba(220, 53, 69, 0.08); }
+    
+    .action-item svg {
+      width: 22px; height: 22px; fill: currentColor; margin-right: 12px; pointer-events: none;
     }
 
-    .item-danger { color: var(--danger); }
-    .item-danger svg { fill: var(--danger); }
-
-    /* --- Native Bottom Sheet Modal --- */
+    /* --- Universal Modal Overlays --- */
     .modal-overlay {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background-color: rgba(0,0,0,0.5);
+      background-color: rgba(0,0,0,0.4);
       z-index: 100;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.3s ease;
-      backdrop-filter: blur(2px);
+      backdrop-filter: blur(3px);
+      -webkit-backdrop-filter: blur(3px);
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
     }
 
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
 
-    .modal-sheet {
-      position: absolute;
-      bottom: 0; left: 0; width: 100%;
+    /* Bottom Sheet (For Edit Name) */
+    .bottom-sheet {
+      width: 100%;
       background-color: var(--surface-color);
-      border-radius: 20px 20px 0 0;
+      border-radius: 24px 24px 0 0;
       padding: 24px;
       transform: translateY(100%);
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-      box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
       padding-bottom: calc(24px + env(safe-area-inset-bottom));
     }
 
-    .modal-overlay.active .modal-sheet { transform: translateY(0); }
+    .modal-overlay.active .bottom-sheet { transform: translateY(0); }
 
-    @media (min-width: 768px) {
-      .modal-sheet {
-        width: 400px; bottom: 50%; left: 50%;
-        border-radius: 16px; transform: translate(-50%, 150%); padding-bottom: 24px;
-      }
-      .modal-overlay.active .modal-sheet { transform: translate(-50%, 50%); }
+    /* Centered Dialog (For Logout) */
+    .center-dialog {
+      width: 90%;
+      max-width: 340px;
+      background-color: var(--surface-color);
+      border-radius: 20px;
+      padding: 24px;
+      margin-bottom: auto;
+      margin-top: auto;
+      transform: scale(0.95);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      text-align: center;
     }
 
-    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .modal-overlay.active .center-dialog {
+      transform: scale(1);
+      opacity: 1;
+    }
+
+    @media (min-width: 768px) {
+      .bottom-sheet { width: 400px; border-radius: 20px; margin-bottom: 24px; }
+      .modal-overlay { align-items: center; }
+    }
+
+    /* --- Modal Shared UI --- */
+    .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--text-main); }
+    .modal-desc { font-size: 15px; color: var(--text-sub); margin-bottom: 24px; line-height: 1.4; }
+    
     .input-group { margin-bottom: 24px; }
     
     .name-input {
       width: 100%;
-      padding: 14px 16px;
-      border-radius: 10px;
+      padding: 16px;
+      border-radius: 12px;
       border: 1px solid var(--border);
       background-color: var(--input-bg);
       color: var(--text-main);
@@ -258,14 +273,15 @@
     .modal-actions { display: flex; gap: 12px; }
 
     .btn {
-      flex: 1; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; border: none; cursor: pointer;
+      flex: 1; padding: 14px; border-radius: 12px; font-size: 16px; font-weight: 600; border: none; cursor: pointer; display: flex; justify-content: center; align-items: center;
     }
 
     .btn-cancel { background-color: var(--bg-color); color: var(--text-main); }
-    .btn-save { background-color: var(--primary); color: #fff; display: flex; justify-content: center; align-items: center; }
+    .btn-save { background-color: var(--primary); color: #fff; }
+    .btn-danger { background-color: var(--danger); color: #fff; }
     
     .spinner {
-      display: none; width: 18px; height: 18px; border: 2px solid transparent; border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite;
+      display: none; width: 20px; height: 20px; border: 2.5px solid transparent; border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -273,18 +289,17 @@
 </head>
 <body>
 
-  <header class="page-header">
-    <button class="back-btn" id="back-btn">
-      <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
-    </button>
-    <div class="page-title">Settings</div>
-  </header>
+  <!-- Minimalist Floating Back Button -->
+  <button class="floating-back" id="back-btn">
+    <svg viewBox="0 0 24 24"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+  </button>
 
   <div class="container">
     
+    <!-- Profile Info -->
     <div class="profile-card">
       <div class="profile-pic-wrapper">
-        <img id="ui-dp" src="" alt="Profile Picture" onerror="this.src='../images/icon.png'">
+        <img id="ui-dp" src="" alt="Profile" onerror="this.src='../images/icon.png'">
       </div>
       <div class="profile-info">
         <div class="name-row">
@@ -297,19 +312,9 @@
       </div>
     </div>
 
-    <div class="settings-group">
-      <button class="settings-item">
-        <svg viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
-        Account Details
-      </button>
-      <button class="settings-item">
-        <svg viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
-        Notifications
-      </button>
-    </div>
-
-    <div class="settings-group">
-      <button class="settings-item item-danger" id="logout-btn">
+    <!-- Standalone Logout Button -->
+    <div class="action-group">
+      <button class="action-item" id="open-logout-btn">
         <svg viewBox="0 0 24 24"><path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/></svg>
         Sign Out
       </button>
@@ -317,18 +322,33 @@
 
   </div>
 
-  <!-- Native Bottom Sheet -->
+  <!-- 1. Edit Name Bottom Sheet Modal -->
   <div class="modal-overlay" id="edit-modal">
-    <div class="modal-sheet" id="modal-sheet">
+    <div class="bottom-sheet" id="edit-sheet">
       <div class="modal-title">Edit Name</div>
       <div class="input-group">
         <input type="text" id="name-input" class="name-input" placeholder="Enter your full name" autocomplete="off" spellcheck="false">
       </div>
       <div class="modal-actions">
-        <button class="btn btn-cancel" id="cancel-edit-btn">Cancel</button>
+        <button class="btn btn-cancel" onclick="triggerNativeBack()">Cancel</button>
         <button class="btn btn-save" id="save-edit-btn">
           <span id="save-text">Save</span>
           <div class="spinner" id="save-spinner"></div>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. Professional Logout Confirmation Modal -->
+  <div class="modal-overlay" id="logout-modal">
+    <div class="center-dialog" id="logout-dialog">
+      <div class="modal-title">Sign Out</div>
+      <div class="modal-desc">Are you sure you want to sign out of your account? You will need to log in again to manage your orders.</div>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" onclick="triggerNativeBack()">Cancel</button>
+        <button class="btn btn-danger" id="confirm-logout-btn">
+          <span id="logout-text">Sign Out</span>
+          <div class="spinner" id="logout-spinner"></div>
         </button>
       </div>
     </div>
@@ -338,26 +358,17 @@
     import { auth } from '../config.js';
     import { onAuthStateChanged, signOut, updateProfile } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // UI Elements
+    // Elements
     const uiDp = document.getElementById('ui-dp');
     const uiName = document.getElementById('ui-name');
     const uiEmail = document.getElementById('ui-email');
     const backBtn = document.getElementById('back-btn');
-    const logoutBtn = document.getElementById('logout-btn');
-    
-    // Modal Elements
-    const editModal = document.getElementById('edit-modal');
-    const modalSheet = document.getElementById('modal-sheet');
-    const openEditBtn = document.getElementById('open-edit-btn');
-    const cancelEditBtn = document.getElementById('cancel-edit-btn');
-    const saveEditBtn = document.getElementById('save-edit-btn');
     const nameInput = document.getElementById('name-input');
-    const saveText = document.getElementById('save-text');
-    const saveSpinner = document.getElementById('save-spinner');
+    
+    // State
+    let activeModal = null; // Tracks which modal is currently open
 
-    let isModalOpen = false;
-
-    // 1. Load User Data
+    // 1. Initial Load
     onAuthStateChanged(auth, (user) => {
       if (user) {
         uiName.innerText = user.displayName || "Aarvi User";
@@ -365,17 +376,14 @@
         nameInput.value = user.displayName || "";
         
         const localDpUrl = localStorage.getItem('aarvi_dp');
-        if (localDpUrl) {
-           uiDp.src = localDpUrl;
-        } else if (user.photoURL) {
-           uiDp.src = user.photoURL;
-        }
+        if (localDpUrl) uiDp.src = localDpUrl;
+        else if (user.photoURL) uiDp.src = user.photoURL;
       } else {
         window.parent.location.reload(); 
       }
     });
 
-    // 2. Hardware/UI Back Button Routing
+    // 2. Base Page Navigation
     backBtn.addEventListener('click', () => {
       if (navigator.vibrate) navigator.vibrate(40);
       if (document.referrer.includes('login') || window.history.length <= 1) {
@@ -385,100 +393,118 @@
       }
     });
 
-    // Native Mobile Hardware Back Button Support for the Bottom Sheet
+    // 3. Centralized Native History Router (Handles Mobile Back Button)
     window.addEventListener('popstate', (e) => {
-      if (isModalOpen) {
-        // If user pressed the phone's physical back button, just close the modal
-        closeModalUI();
-      }
-    });
-
-    // 3. Modal Logic
-    const openModal = () => {
-      editModal.classList.add('active');
-      isModalOpen = true;
-      // Push a fake state to the browser history so the physical back button has something to pop
-      history.pushState({ modal: 'edit' }, '', window.location.href);
-      setTimeout(() => nameInput.focus(), 300);
-    };
-
-    const closeModalUI = () => {
-      editModal.classList.remove('active');
-      nameInput.blur();
-      isModalOpen = false;
-    };
-
-    const closeModalAndHistory = () => {
-      if (isModalOpen) {
-        closeModalUI();
-        // If we close via buttons (Cancel/Save), we need to manually pop the history state we pushed
-        if (history.state && history.state.modal === 'edit') {
-          history.back();
+      if (activeModal) {
+        // A hardware back press occurred while a modal was open
+        document.getElementById(activeModal).classList.remove('active');
+        
+        if (activeModal === 'edit-modal') {
+           nameInput.blur();
+           nameInput.value = auth.currentUser?.displayName || ""; // Reset on dismiss
         }
+        activeModal = null;
       }
+    });
+
+    // Helper to programmatically open a modal and push to history
+    function openModalWithHistory(modalId) {
+      if (navigator.vibrate) navigator.vibrate(40);
+      document.getElementById(modalId).classList.add('active');
+      activeModal = modalId;
+      // Push a fake state to the history stack so the physical back button has something to pop
+      history.pushState({ modal: modalId }, '', window.location.href);
+    }
+
+    // Helper for "Cancel" buttons: firing back() triggers the popstate listener automatically
+    window.triggerNativeBack = function() {
+      if (navigator.vibrate) navigator.vibrate(40);
+      if (activeModal) history.back(); 
     };
 
-    openEditBtn.addEventListener('click', () => {
-      if (navigator.vibrate) navigator.vibrate(40);
-      openModal();
+    // Close on background click
+    document.getElementById('edit-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'edit-modal') triggerNativeBack();
+    });
+    document.getElementById('logout-modal').addEventListener('click', (e) => {
+      if (e.target.id === 'logout-modal') triggerNativeBack();
     });
 
-    cancelEditBtn.addEventListener('click', () => {
-      if (navigator.vibrate) navigator.vibrate(40);
-      closeModalAndHistory();
-      nameInput.value = auth.currentUser?.displayName || "";
+    // Prevent clicks inside modal from closing it
+    document.getElementById('edit-sheet').addEventListener('click', e => e.stopPropagation());
+    document.getElementById('logout-dialog').addEventListener('click', e => e.stopPropagation());
+
+
+    // 4. Edit Name Logic
+    document.getElementById('open-edit-btn').addEventListener('click', () => {
+      openModalWithHistory('edit-modal');
+      setTimeout(() => nameInput.focus(), 300);
     });
 
-    editModal.addEventListener('click', (e) => {
-      if (e.target === editModal) closeModalAndHistory();
-    });
-
-    modalSheet.addEventListener('click', (e) => e.stopPropagation());
-
-    // 4. Update Profile
-    saveEditBtn.addEventListener('click', async () => {
+    document.getElementById('save-edit-btn').addEventListener('click', async () => {
       const newName = nameInput.value.trim();
-      
-      if (!newName) {
-        alert("Name cannot be empty.");
-        return;
-      }
-      
-      if (newName === auth.currentUser.displayName) {
-        closeModalAndHistory();
-        return;
-      }
+      if (!newName) return alert("Name cannot be empty.");
+      if (newName === auth.currentUser.displayName) return triggerNativeBack();
 
       if (navigator.vibrate) navigator.vibrate(40);
       
-      saveText.style.display = 'none';
-      saveSpinner.style.display = 'block';
-      saveEditBtn.style.pointerEvents = 'none';
+      const btn = document.getElementById('save-edit-btn');
+      document.getElementById('save-text').style.display = 'none';
+      document.getElementById('save-spinner').style.display = 'block';
+      btn.style.pointerEvents = 'none';
 
       try {
         await updateProfile(auth.currentUser, { displayName: newName });
         uiName.innerText = newName;
-        closeModalAndHistory();
+        triggerNativeBack(); // Close modal properly via history
       } catch (error) {
-        console.error("Error updating profile:", error);
-        alert("Could not update name. Please check your connection.");
+        console.error("Update error:", error);
+        alert("Could not update name. Check your connection.");
       } finally {
-        saveText.style.display = 'block';
-        saveSpinner.style.display = 'none';
-        saveEditBtn.style.pointerEvents = 'auto';
+        document.getElementById('save-text').style.display = 'block';
+        document.getElementById('save-spinner').style.display = 'none';
+        btn.style.pointerEvents = 'auto';
       }
     });
 
-    // 5. Logout
-    logoutBtn.addEventListener('click', async () => {
+
+    // 5. Professional Cache-Clearing Logout Logic
+    document.getElementById('open-logout-btn').addEventListener('click', () => {
+      openModalWithHistory('logout-modal');
+    });
+
+    document.getElementById('confirm-logout-btn').addEventListener('click', async () => {
       if (navigator.vibrate) navigator.vibrate(40);
-      if (confirm("Are you sure you want to sign out?")) {
-        try {
-          await signOut(auth);
-        } catch (error) {
-          alert("Error signing out.");
-          console.error(error);
+      
+      const btn = document.getElementById('confirm-logout-btn');
+      document.getElementById('logout-text').style.display = 'none';
+      document.getElementById('logout-spinner').style.display = 'block';
+      btn.style.pointerEvents = 'none';
+
+      try {
+        // 1. Aggressively clear all local browser storage caches
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        if ('caches' in window) {
+          const cacheNames = await caches.keys();
+          for (const name of cacheNames) {
+            await caches.delete(name);
+          }
         }
+        
+        // 2. End Firebase Auth session
+        await signOut(auth);
+        
+        // Modal doesn't need closing, index.html shell will instantly lock and route to login
+      } catch (error) {
+        console.error("Logout error:", error);
+        alert("Failed to log out cleanly.");
+        
+        // Revert UI on failure
+        document.getElementById('logout-text').style.display = 'block';
+        document.getElementById('logout-spinner').style.display = 'none';
+        btn.style.pointerEvents = 'auto';
       }
     });
   </script>
