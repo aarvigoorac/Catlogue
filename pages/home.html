@@ -11,22 +11,27 @@
     :root {
       --bg-color: #f1f3f6;
       --surface-color: #ffffff;
+      --surface-rgb: 255, 255, 255;
       --text-main: #000000;
       --text-sub: #666666;
       --border: #e0e0e0;
       --primary: #2874f0;
       --danger: #dc3545;
+      --danger-bg: #f9dedc;
       --skeleton-base: #e0e0e0;
       --skeleton-shine: #f5f5f5;
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --bg-color: #000000;
-        --surface-color: #1a1a1a;
+        --bg-color: #121212;
+        --surface-color: #1e1e1e;
+        --surface-rgb: 30, 30, 30;
         --text-main: #ffffff;
         --text-sub: #a0a0a0;
         --border: #333333;
+        --danger: #ff8a80;
+        --danger-bg: #410e0b;
         --skeleton-base: #333333;
         --skeleton-shine: #444444;
       }
@@ -38,125 +43,160 @@
     /* Layout & Header */
     .app-container { display: flex; flex-direction: column; height: 100%; max-width: 900px; margin: 0 auto; background: var(--bg-color); position: relative; }
     
-    .main-header { padding: calc(16px + env(safe-area-inset-top)) 16px 12px; background: var(--surface-color); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; display: flex; flex-direction: column; gap: 12px; }
+    .main-header { padding: calc(16px + env(safe-area-inset-top)) 16px 12px; background: rgba(var(--surface-rgb), 0.9); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; display: flex; flex-direction: column; gap: 16px; }
     .header-top { display: flex; align-items: center; justify-content: space-between; }
-    .back-nav-btn { display: none; background: transparent; border: none; color: var(--text-main); cursor: pointer; padding: 8px 12px 8px 0; margin-right: 8px; align-items: center; justify-content: center; }
-    .back-nav-btn svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2.5; }
-    .page-title { font-size: 22px; font-weight: 800; display: flex; align-items: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .back-nav-btn { display: none; background: transparent; border: none; color: var(--text-main); cursor: pointer; padding: 8px 12px 8px 0; margin-right: 8px; align-items: center; justify-content: center; transition: transform 0.2s; }
+    .back-nav-btn:active { transform: scale(0.9); }
+    .back-nav-btn svg { width: 26px; height: 26px; stroke: currentColor; stroke-width: 2.5; }
+    .page-title { font-size: 24px; font-weight: 800; display: flex; align-items: center; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.5px; }
 
     /* Search Bar */
     .search-wrap { position: relative; width: 100%; display: flex; align-items: center; }
-    .search-wrap svg { position: absolute; left: 16px; width: 20px; height: 20px; stroke: var(--text-sub); stroke-width: 2.5; transition: stroke 0.3s ease; }
-    .search-input { width: 100%; padding: 12px 16px 12px 48px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-color); color: var(--text-main); font-size: 15px; outline: none; transition: border-color 0.2s; }
-    .search-input:focus { border-color: var(--primary); background: var(--surface-color); }
+    .search-wrap svg { position: absolute; left: 16px; width: 20px; height: 20px; stroke: var(--text-sub); stroke-width: 2.5; transition: stroke 0.3s ease; pointer-events: none; }
+    .search-input { width: 100%; padding: 14px 16px 14px 46px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--surface-color); color: var(--text-main); font-size: 15px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(40,116,240,0.1); }
     .search-input:focus + svg { stroke: var(--primary); }
 
     /* Scrollable Feeds */
-    .feed-container { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 90px; display: flex; flex-direction: column; gap: 16px; }
-    .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+    .feed-container { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 120px; display: flex; flex-direction: column; gap: 16px; }
+    .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
     @media (min-width: 600px) { .grid-layout { grid-template-columns: repeat(3, 1fr); } }
 
     /* Category Cards */
-    .cat-card { background: var(--surface-color); border-radius: 16px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
-    .cat-card:active { transform: scale(0.96); }
+    .cat-card { background: var(--surface-color); border-radius: 20px; border: 1px solid var(--border); overflow: hidden; display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.03); }
+    .cat-card:active { transform: scale(0.96); background: var(--bg-color); }
     .cat-img-wrap { width: 100%; aspect-ratio: 1; background: var(--bg-color); position: relative; border-bottom: 1px solid var(--border); }
     .cat-img { width: 100%; height: 100%; object-fit: cover; }
-    .cat-details { padding: 12px; display: flex; flex-direction: column; gap: 4px; }
-    .cat-name { font-size: 15px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
-    .cat-meta { font-size: 12px; color: var(--text-sub); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .btn-edit-cat { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.9); border-radius: 50%; padding: 6px; border: none; cursor: pointer; color: var(--text-main); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    @media (prefers-color-scheme: dark) { .btn-edit-cat { background: rgba(0,0,0,0.7); } }
+    .cat-details { padding: 16px; display: flex; flex-direction: column; gap: 4px; }
+    .cat-name { font-size: 16px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); }
+    .cat-meta { font-size: 13px; color: var(--text-sub); font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .btn-edit-item { position: absolute; top: 12px; right: 12px; background: rgba(var(--surface-rgb), 0.9); backdrop-filter: blur(4px); border-radius: 50%; padding: 8px; border: 1px solid var(--border); cursor: pointer; color: var(--text-main); box-shadow: 0 4px 12px rgba(0,0,0,0.1); transition: transform 0.2s; display: flex; align-items: center; justify-content: center; }
+    .btn-edit-item:active { transform: scale(0.9); }
+    .btn-edit-item svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.5; }
 
     /* Product Cards */
-    .prod-card { background: var(--surface-color); border-radius: 16px; border: 1px solid var(--border); display: flex; gap: 12px; padding: 12px; cursor: pointer; transition: transform 0.15s; }
-    .prod-card:active { transform: scale(0.97); }
-    .prod-img { width: 80px; height: 80px; border-radius: 12px; background: var(--bg-color); object-fit: contain; flex-shrink: 0; padding: 4px; border: 1px solid var(--border); }
-    .prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; }
-    .prod-name { font-size: 15px; font-weight: 800; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-    .prod-code { font-size: 12px; color: var(--primary); font-weight: 700; }
+    .prod-card { background: var(--surface-color); border-radius: 20px; border: 1px solid var(--border); display: flex; gap: 16px; padding: 16px; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.02); }
+    .prod-card:active { transform: scale(0.97); background: var(--bg-color); }
+    .prod-img { width: 90px; height: 90px; border-radius: 12px; background: var(--bg-color); object-fit: cover; flex-shrink: 0; border: 1px solid var(--border); }
+    .prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+    .prod-name { font-size: 16px; font-weight: 800; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-main); }
+    .prod-code { font-size: 13px; color: var(--primary); font-weight: 800; background: rgba(40,116,240,0.1); padding: 4px 8px; border-radius: 6px; width: max-content; }
 
     /* Floating Action Button */
-    .fab { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px; width: 60px; height: 60px; border-radius: 30px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 24px rgba(40, 116, 240, 0.4); border: none; cursor: pointer; transition: transform 0.2s; z-index: 100; }
+    .fab { position: fixed; bottom: calc(24px + env(safe-area-inset-bottom)); right: 24px; width: 64px; height: 64px; border-radius: 32px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; box-shadow: 0 12px 28px rgba(40, 116, 240, 0.35); border: none; cursor: pointer; transition: transform 0.2s; z-index: 100; }
     .fab:active { transform: scale(0.9); }
-    .fab svg { width: 28px; height: 28px; stroke: currentColor; stroke-width: 2.5; }
+    .fab svg { width: 30px; height: 30px; stroke: currentColor; stroke-width: 2.5; }
 
-    /* Shared Overlay & Sheets */
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); z-index: 1000; }
+    /* Shared Overlay & Bottom Sheets */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 1000; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     
     .bottom-sheet { position: fixed; bottom: 0; left: 50%; transform: translate(-50%, 100%); width: 100%; max-width: 600px; background: var(--bg-color); border-radius: 24px 24px 0 0; transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); max-height: 90vh; z-index: 1001; }
     .bottom-sheet.active { transform: translate(-50%, 0); }
     
     .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--surface-color); border-bottom: 1px solid var(--border); border-radius: 24px 24px 0 0; position: sticky; top: 0; z-index: 10; }
-    .sheet-title { font-size: 18px; font-weight: 800; }
-    .btn-icon { background: transparent; border: none; color: var(--text-main); width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; transition: background 0.2s; }
-    .btn-icon:active { background: var(--border); }
-    .sheet-scroll { padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; padding-bottom: max(40px, env(safe-area-inset-bottom)); }
+    .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-main); }
+    .btn-icon { background: var(--bg-color); border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; transition: transform 0.1s; }
+    .btn-icon:active { transform: scale(0.9); }
+    .btn-icon svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2.5; }
+    .sheet-scroll { padding: 24px; display: flex; flex-direction: column; gap: 20px; overflow-y: auto; padding-bottom: max(40px, env(safe-area-inset-bottom)); }
 
     /* Form Inputs */
     .input-group { display: flex; flex-direction: column; gap: 8px; }
-    .input-label { font-size: 13px; font-weight: 700; color: var(--text-sub); margin-left: 4px; }
-    .input-field { width: 100%; padding: 16px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--surface-color); color: var(--text-main); font-size: 15px; outline: none; transition: border-color 0.2s; }
+    .input-label { font-size: 13px; font-weight: 800; color: var(--text-sub); margin-left: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .input-field { width: 100%; padding: 16px; border-radius: 16px; border: 1.5px solid var(--border); background: var(--surface-color); color: var(--text-main); font-size: 16px; font-weight: 600; outline: none; transition: border-color 0.2s; }
     .input-field:focus { border-color: var(--primary); }
-    textarea.input-field { min-height: 100px; resize: vertical; }
+    textarea.input-field { min-height: 120px; resize: vertical; }
 
-    .btn-save { width: 100%; padding: 16px; border-radius: 12px; font-size: 16px; font-weight: 800; border: none; background: var(--primary); color: white; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
-    .btn-save:active { transform: scale(0.97); }
+    .btn-master { width: 100%; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
+    .btn-master:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: white; box-shadow: 0 8px 20px rgba(40, 116, 240, 0.25); }
+    
+    .danger-zone { margin-top: 10px; padding-top: 20px; border-top: 1px solid var(--border); display: none; }
+    .btn-danger-ghost { background: transparent; border: 2px solid var(--danger-bg); color: var(--danger); }
+    .btn-danger-ghost:active { background: var(--danger-bg); }
 
     /* Image Picker UI */
-    .image-picker-box { width: 100%; aspect-ratio: 16/9; background: var(--surface-color); border: 2px dashed var(--border); border-radius: 16px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; color: var(--text-sub); transition: border-color 0.2s; }
+    .image-picker-box { width: 100%; aspect-ratio: 1; max-width: 240px; margin: 0 auto; background: var(--surface-color); border: 2px dashed var(--border); border-radius: 20px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; color: var(--text-sub); transition: border-color 0.2s; }
     .image-picker-box:active { border-color: var(--primary); }
-    .image-picker-box img { width: 100%; height: 100%; object-fit: contain; position: absolute; top: 0; left: 0; display: none; background: var(--bg-color); }
+    .image-picker-box img { width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0; display: none; background: var(--bg-color); }
     .image-picker-box.has-image img { display: block; }
+    .image-picker-box svg { width: 36px; height: 36px; stroke: currentColor; stroke-width: 2; margin-bottom: 8px; }
 
-    /* Source Picker Bottom Sheet */
-    .source-btn { width: 100%; padding: 18px; display: flex; align-items: center; gap: 16px; background: var(--surface-color); border: 1px solid var(--border); border-radius: 16px; font-size: 16px; font-weight: 700; color: var(--text-main); cursor: pointer; margin-bottom: 12px; }
-    .source-btn:active { background: var(--bg-color); }
+    /* Source Picker */
+    .source-btn { width: 100%; padding: 20px; display: flex; align-items: center; gap: 16px; background: var(--surface-color); border: 1.5px solid var(--border); border-radius: 16px; font-size: 16px; font-weight: 800; color: var(--text-main); cursor: pointer; margin-bottom: 12px; transition: transform 0.15s; }
+    .source-btn:active { transform: scale(0.97); background: var(--bg-color); }
+    .source-btn svg { width: 24px; height: 24px; stroke: currentColor; stroke-width: 2.5; color: var(--primary); }
 
-    /* Full Screen Modals (Product Detail & Camera) */
+    /* Native In-App Camera */
     .fs-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 2000; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); display: flex; flex-direction: column; }
     .fs-modal.active { transform: translateY(0); }
-    .fs-header { display: flex; align-items: center; justify-content: space-between; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; background: var(--surface-color); border-bottom: 1px solid var(--border); }
     
-    /* Product Detail specific */
-    .detail-img-wrap { width: 100%; aspect-ratio: 1; background: var(--surface-color); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); cursor: zoom-in; }
-    .detail-img { width: 100%; height: 100%; object-fit: contain; padding: 16px; }
-    .detail-info { padding: 20px; display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto; }
-    .detail-title { font-size: 22px; font-weight: 800; color: var(--text-main); }
-    .detail-code { font-size: 14px; color: var(--primary); font-weight: 700; background: rgba(40,116,240,0.1); padding: 4px 10px; border-radius: 6px; width: max-content; }
-    .detail-desc { font-size: 15px; color: var(--text-sub); line-height: 1.5; white-space: pre-wrap; }
-    .action-row { display: flex; gap: 12px; padding: 20px; border-top: 1px solid var(--border); background: var(--surface-color); padding-bottom: max(20px, env(safe-area-inset-bottom)); }
-    .btn-outline { flex: 1; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 800; border: 1.5px solid var(--border); background: transparent; color: var(--text-main); cursor: pointer; text-align: center; }
-    .btn-danger { color: var(--danger); border-color: var(--danger); }
+    .camera-viewport { flex: 1; position: relative; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    #camera-video { width: 100%; height: 100%; object-fit: cover; }
+    .camera-overlay-square { position: absolute; width: 300px; height: 300px; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 0 0 9999px rgba(0,0,0,0.5); border-radius: 8px; pointer-events: none; }
+    @media(min-width: 400px) { .camera-overlay-square { width: 340px; height: 340px; } }
+    @media(min-width: 600px) { .camera-overlay-square { width: 400px; height: 400px; } }
+    
+    .camera-controls { padding: 24px; padding-bottom: max(32px, env(safe-area-inset-bottom)); background: #000; display: flex; align-items: center; justify-content: center; }
+    .btn-capture { width: 76px; height: 76px; border-radius: 50%; background: #fff; border: 4px solid #ccc; outline: 3px solid #fff; cursor: pointer; transition: transform 0.1s; }
+    .btn-capture:active { transform: scale(0.9); }
+    .cam-fallback { position: absolute; inset: 0; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; color: #fff; background: #111; z-index: 10; }
 
-    /* Full Screen Image Viewer (Pinch Zoom) */
+    /* Dark Room Crop Engine */
+    .crop-editor-mode { --bg-color: #000; --surface-color: #1a1a1a; --border: #333; --text-main: #fff; }
+    .crop-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #000; touch-action: none; width: 100%; }
+    #crop-target-img { position: absolute; top: 0; left: 0; transform-origin: top left; will-change: transform; cursor: grab; }
+    #crop-target-img:active { cursor: grabbing; }
+    .crop-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; }
+    .crop-footer { padding: 24px; display: flex; gap: 16px; background: #111; padding-bottom: max(24px, env(safe-area-inset-bottom)); border-top: 1px solid #222; }
+    .btn-crop { flex: 1; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; transition: transform 0.15s; }
+    .btn-crop:active { transform: scale(0.96); }
+    .btn-crop-retake { background: #2a2a2a; color: #fff; border: 1px solid #444; }
+
+    /* Product Detail View */
+    .fs-header { display: flex; align-items: center; justify-content: space-between; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; background: var(--surface-color); border-bottom: 1px solid var(--border); }
+    .detail-img-wrap { width: 100%; aspect-ratio: 1; background: var(--surface-color); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); cursor: zoom-in; }
+    .detail-img { width: 100%; height: 100%; object-fit: cover; }
+    .detail-info { padding: 24px; display: flex; flex-direction: column; gap: 12px; flex: 1; overflow-y: auto; }
+    .detail-title { font-size: 24px; font-weight: 800; color: var(--text-main); line-height: 1.3; }
+    .detail-code { font-size: 15px; color: var(--primary); font-weight: 800; background: rgba(40,116,240,0.1); padding: 6px 12px; border-radius: 8px; width: max-content; }
+    .detail-desc { font-size: 16px; color: var(--text-sub); line-height: 1.6; white-space: pre-wrap; font-weight: 500; }
+    
+    .action-row { display: flex; gap: 12px; padding: 20px; border-top: 1px solid var(--border); background: var(--surface-color); padding-bottom: max(20px, env(safe-area-inset-bottom)); }
+    .btn-outline { flex: 1; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: 2px solid var(--border); background: transparent; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
+    .btn-outline:active { transform: scale(0.97); background: var(--bg-color); }
+    
+    /* Full Screen Image Zoom */
     .zoom-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; }
     .zoom-viewer.active { opacity: 1; pointer-events: auto; }
     .zoom-header { position: absolute; top: 0; left: 0; width: 100%; padding: calc(16px + env(safe-area-inset-top)) 16px; display: flex; justify-content: flex-start; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); }
-    .zoom-header .btn-icon { background: rgba(255,255,255,0.2); color: #fff; }
     .zoom-content { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; touch-action: pan-x pan-y pinch-zoom; }
     .zoom-content img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-    /* In-App Camera UI */
-    .camera-viewport { flex: 1; position: relative; background: #000; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-    #camera-video { width: 100%; height: 100%; object-fit: cover; }
-    .camera-controls { padding: 24px; padding-bottom: max(32px, env(safe-area-inset-bottom)); background: #000; display: flex; align-items: center; justify-content: center; gap: 40px; }
-    .btn-capture { width: 72px; height: 72px; border-radius: 50%; background: #fff; border: 4px solid #aaa; cursor: pointer; transition: transform 0.1s; }
-    .btn-capture:active { transform: scale(0.9); }
-    .cam-fallback { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; color: #fff; background: #111; z-index: 10; display: none; }
+    /* Central Confirm Dialog & Index Helper */
+    .dialog-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 4000; opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(4px); }
+    .dialog-overlay.active { opacity: 1; pointer-events: auto; }
+    .dialog-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); background: var(--surface-color); width: 90%; max-width: 340px; border-radius: 24px; padding: 24px; z-index: 4001; opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
+    .dialog-box.active { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+    
+    .dialog-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--danger-bg); color: var(--danger); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
+    .dialog-icon svg { width: 32px; height: 32px; stroke: currentColor; stroke-width: 2.5; }
+    .dialog-title { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
+    .dialog-desc { font-size: 15px; color: var(--text-sub); margin-bottom: 24px; line-height: 1.5; font-weight: 500; }
+    .dialog-actions { display: flex; gap: 12px; }
 
     /* Utilities */
-    .skeleton { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 200% 100% !important; animation: shimmer 1.5s infinite !important; border-radius: 8px; }
+    .skeleton { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 200% 100% !important; animation: shimmer 1.5s infinite !important; border-radius: 12px; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
-    .hidden { display: none !important; }
     #hidden-file { display: none; }
   </style>
 </head>
 <body>
 
-  <!-- Main Dual-State Application -->
+  <!-- Main App View -->
   <div class="app-container">
-    
     <header class="main-header">
       <div class="header-top">
         <button class="back-nav-btn" id="btn-back-to-cats">
@@ -170,22 +210,18 @@
       </div>
     </header>
 
-    <!-- Dynamic Feed Area -->
-    <div class="feed-container" id="feed-container">
-      <!-- Injected via JS -->
-    </div>
+    <div class="feed-container" id="feed-container"></div>
 
-    <!-- Smart FAB -->
     <button class="fab" id="main-fab">
       <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
     </button>
   </div>
 
-  <!-- Hidden File Input for Compression Engine -->
-  <input type="file" id="hidden-file" accept="image/*" capture="environment">
+  <input type="file" id="hidden-file" accept="image/*">
 
-  <!-- ================= OVERLAYS & MODALS ================= -->
+  <!-- Shared Overlays -->
   <div class="modal-overlay" id="main-overlay"></div>
+  <div class="dialog-overlay" id="dialog-overlay"></div>
 
   <!-- 1. Category Form (Bottom Sheet) -->
   <div class="bottom-sheet" id="sheet-category">
@@ -195,8 +231,8 @@
     </div>
     <div class="sheet-scroll">
       <div class="image-picker-box" id="cat-img-picker">
-        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        <div style="font-size:14px; font-weight:600; margin-top:8px;">Add Cover Image</div>
+        <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
+        <div style="font-size:14px; font-weight:700; margin-top:8px;">Add Square Image</div>
         <img id="cat-img-preview" src="">
       </div>
       <div class="input-group">
@@ -207,7 +243,11 @@
         <label class="input-label">Short Description</label>
         <input type="text" id="cat-desc" class="input-field" placeholder="Optional brief description">
       </div>
-      <button class="btn-save" id="btn-save-cat">Save Catalog</button>
+      <button class="btn-master btn-primary" id="btn-save-cat">Save Catalog</button>
+      
+      <div class="danger-zone" id="cat-danger-zone">
+        <button class="btn-master btn-danger-ghost" id="btn-req-delete-cat">Delete Catalog</button>
+      </div>
     </div>
   </div>
 
@@ -219,8 +259,8 @@
     </div>
     <div class="sheet-scroll">
       <div class="image-picker-box" id="prod-img-picker">
-        <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-        <div style="font-size:14px; font-weight:600; margin-top:8px;">Add Product Image</div>
+        <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z"/><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z"/></svg>
+        <div style="font-size:14px; font-weight:700; margin-top:8px;">Add Product Image</div>
         <img id="prod-img-preview" src="">
       </div>
       <div class="input-group">
@@ -235,40 +275,41 @@
         <label class="input-label">Description</label>
         <textarea id="prod-desc" class="input-field" placeholder="Full product details..."></textarea>
       </div>
-      <button class="btn-save" id="btn-save-prod">Save Product</button>
+      <button class="btn-master btn-primary" id="btn-save-prod">Save Product</button>
     </div>
   </div>
 
   <!-- 3. Image Source Picker (Bottom Sheet) -->
   <div class="bottom-sheet" id="sheet-source">
     <div class="sheet-header">
-      <div class="sheet-title">Select Image Source</div>
+      <div class="sheet-title">Select Source</div>
       <button class="btn-icon btn-close-modal"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
     </div>
     <div class="sheet-scroll" style="padding-top:10px;">
       <button class="source-btn" id="btn-open-camera">
-        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
         Take Photo
       </button>
       <button class="source-btn" id="btn-open-gallery">
-        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
         Choose from Gallery
       </button>
     </div>
   </div>
 
-  <!-- 4. Native In-App Camera (Full Screen) -->
+  <!-- 4. Native Camera (Full Screen) -->
   <div class="fs-modal" id="modal-camera">
-    <div class="fs-header" style="background:#000; border-bottom:1px solid #333;">
-      <button class="btn-icon btn-close-modal" style="color:#fff;"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
-      <div class="sheet-title" style="color:#fff;">Camera</div>
-      <div style="width:36px;"></div> <!-- Spacer -->
+    <div class="fs-header" style="background:#000; border-bottom:1px solid #222;">
+      <button class="btn-icon btn-close-modal" style="color:#fff; border-color:#333;"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+      <div class="sheet-title" style="color:#fff;">Align in Square</div>
+      <div style="width:40px;"></div>
     </div>
     <div class="camera-viewport">
       <video id="camera-video" autoplay playsinline></video>
+      <div class="camera-overlay-square"></div>
       <div class="cam-fallback" id="cam-fallback">
-        <div style="margin-bottom:16px;">Camera access denied or unavailable.</div>
-        <button class="btn-save" style="width:auto; padding:10px 20px;" onclick="document.getElementById('btn-open-gallery').click()">Open Gallery Instead</button>
+        <div style="margin-bottom:16px;">Camera access denied.</div>
+        <button class="btn-master btn-primary" style="width:auto; padding:12px 24px;" onclick="document.getElementById('btn-open-gallery').click()">Open Gallery Instead</button>
       </div>
     </div>
     <div class="camera-controls">
@@ -276,12 +317,32 @@
     </div>
   </div>
 
-  <!-- 5. Product Detail View (Full Screen) -->
+  <!-- 5. Dark Room Crop Engine (Full Screen) -->
+  <div class="fs-modal crop-editor-mode" id="modal-crop">
+    <div class="fs-header" style="background:rgba(0,0,0,0.85); border-bottom:1px solid #222;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <button class="btn-icon btn-close-modal" style="background:#222; color:#fff; border:none;"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button>
+        <div class="sheet-title" style="color:#fff;">Crop Square</div>
+      </div>
+    </div>
+    <div class="crop-area" id="crop-area">
+      <img id="crop-target-img" src="">
+      <div class="crop-mask">
+        <div class="camera-overlay-square" id="crop-square"></div>
+      </div>
+    </div>
+    <div class="crop-footer">
+      <button class="btn-crop btn-crop-retake" onclick="document.getElementById('hidden-file').click()">Retake</button>
+      <button class="btn-crop btn-primary" id="btn-crop-confirm">Confirm</button>
+    </div>
+  </div>
+
+  <!-- 6. Product Detail View (Full Screen) -->
   <div class="fs-modal" id="modal-product-detail">
     <div class="fs-header">
       <button class="btn-icon btn-close-modal"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button>
       <div class="sheet-title">Product Details</div>
-      <div style="width:36px;"></div>
+      <button class="btn-icon" id="pd-btn-edit"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.89 1.127l-3.196.1a.375.375 0 01-.423-.423l.1-3.196a4.5 4.5 0 011.127-1.89l14.312-14.31z"/></svg></button>
     </div>
     <div class="detail-img-wrap" id="pd-img-wrap">
       <img id="pd-img" class="detail-img" src="">
@@ -292,42 +353,62 @@
       <div class="detail-desc" id="pd-desc">...</div>
     </div>
     <div class="action-row">
-      <button class="btn-outline btn-danger" id="pd-btn-delete">Delete</button>
-      <button class="btn-outline" id="pd-btn-edit">Edit Product</button>
+      <button class="btn-outline btn-danger-ghost" style="border: 2px solid var(--danger-bg); color: var(--danger);" id="pd-btn-delete">Delete Product</button>
     </div>
   </div>
 
-  <!-- 6. Full Screen Image Zoom (Pitch Black) -->
+  <!-- 7. Zoom Viewer -->
   <div class="zoom-viewer" id="viewer-zoom">
     <div class="zoom-header">
-      <button class="btn-icon btn-close-modal"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
+      <button class="btn-icon btn-close-modal" style="background:rgba(255,255,255,0.2); color:#fff; border:none;"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg></button>
     </div>
     <div class="zoom-content">
       <img id="zoom-img" src="">
     </div>
   </div>
 
-  <!-- SCRIPTS -->
+  <!-- 8. Confirmation Dialog -->
+  <div class="dialog-box" id="dialog-confirm">
+    <div class="dialog-icon"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg></div>
+    <div class="dialog-title" id="dialog-title">Delete?</div>
+    <div class="dialog-desc" id="dialog-desc">This action cannot be undone.</div>
+    <div class="dialog-actions">
+      <button class="btn-master btn-close-modal" style="background:var(--skeleton-base); color:var(--text-main);">Cancel</button>
+      <button class="btn-master" style="background:var(--danger); color:white; box-shadow:0 8px 20px rgba(220,53,69,0.3);" id="btn-confirm-execute">Delete</button>
+    </div>
+  </div>
+
+  <!-- 9. Firebase Index Helper Dialog -->
+  <div class="dialog-box" id="dialog-index">
+    <div class="dialog-icon" style="background:rgba(40,116,240,0.1); color:var(--primary);"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+    <div class="dialog-title">Database Setup Required</div>
+    <div class="dialog-desc">To make products load super fast, Firebase requires a specific database index to be created first.</div>
+    <div class="dialog-actions">
+      <button class="btn-master btn-close-modal" style="background:var(--skeleton-base); color:var(--text-main);">Close</button>
+      <a id="index-link" target="_blank" class="btn-master btn-primary" style="text-decoration:none;">Create Index Now</a>
+    </div>
+  </div>
+
   <script type="module">
     import { auth, db } from '../config.js';
-    import { collection, query, where, orderBy, limit, getDocs, doc, addDoc, updateDoc, deleteDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+    import { collection, query, where, orderBy, limit, getDocs, doc, addDoc, updateDoc, deleteDoc, writeBatch, startAfter } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const IMGBB_API_KEY = '9a111fa5355e1361b7ef649258165477';
 
-    // --- State Management ---
     const STATE = {
-      view: 'categories', // 'categories' or 'products'
+      view: 'categories',
       activeCatId: null,
       activeCatName: null,
       searchQuery: '',
       modalStack: [],
-      editContext: null, // Holds item being edited
-      tempBase64Img: null, // Temporary un-uploaded compressed image
-      pendingImgTarget: null // 'cat' or 'prod'
+      editContext: null,
+      tempBase64Img: null,
+      pendingImgTarget: null,
+      lastProdDoc: null,
+      hasMoreProd: true
     };
 
-    // --- DOM Elements ---
     const ui = {
       title: document.getElementById('main-title'),
       btnBack: document.getElementById('btn-back-to-cats'),
@@ -335,29 +416,17 @@
       feed: document.getElementById('feed-container'),
       fab: document.getElementById('main-fab'),
       overlay: document.getElementById('main-overlay'),
-      sheets: {
-        cat: document.getElementById('sheet-category'),
-        prod: document.getElementById('sheet-product'),
-        source: document.getElementById('sheet-source')
-      },
-      fs: {
-        camera: document.getElementById('modal-camera'),
-        detail: document.getElementById('modal-product-detail'),
-        zoom: document.getElementById('viewer-zoom')
-      }
+      dialogOverlay: document.getElementById('dialog-overlay')
     };
 
-    // --- 1. Routing & Hardware Back Button Engine ---
+    // --- 1. Routing Engine ---
     function openModal(modalId) {
       if (navigator.vibrate) navigator.vibrate(10);
-      
       const el = document.getElementById(modalId);
       if(!el) return;
 
-      // If it's a bottom sheet, show overlay
-      if(el.classList.contains('bottom-sheet')) {
-        ui.overlay.classList.add('active');
-      }
+      if(el.classList.contains('bottom-sheet')) ui.overlay.classList.add('active');
+      if(el.classList.contains('dialog-box')) ui.dialogOverlay.classList.add('active');
       
       el.classList.add('active');
       STATE.modalStack.push(modalId);
@@ -368,26 +437,24 @@
       const el = document.getElementById(modalId);
       if(el) el.classList.remove('active');
       
-      // If no bottom sheets remain in stack, hide overlay
       const hasSheets = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('bottom-sheet'));
       if(!hasSheets) ui.overlay.classList.remove('active');
+
+      const hasDialogs = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('dialog-box'));
+      if(!hasDialogs) ui.dialogOverlay.classList.remove('active');
       
-      // Special teardowns
       if(modalId === 'modal-camera') stopCamera();
     }
 
     window.addEventListener('popstate', (e) => {
       if (STATE.modalStack.length > 0) {
-        // Close top modal
         const top = STATE.modalStack.pop();
         closeModalUI(top);
       } else if (STATE.view === 'products') {
-        // Back from products to categories
         switchView('categories');
       }
     });
 
-    // Bind all close buttons
     document.querySelectorAll('.btn-close-modal').forEach(btn => {
       btn.addEventListener('click', () => {
         if (navigator.vibrate) navigator.vibrate(10);
@@ -395,9 +462,8 @@
       });
     });
 
-    ui.overlay.addEventListener('click', () => {
-      if (STATE.modalStack.length > 0) history.back();
-    });
+    ui.overlay.addEventListener('click', () => { if (STATE.modalStack.length > 0) history.back(); });
+    ui.dialogOverlay.addEventListener('click', () => { if (STATE.modalStack.length > 0) history.back(); });
 
     // --- 2. Dual-State View Engine ---
     function switchView(targetView, catId = null, catName = null) {
@@ -419,15 +485,14 @@
         ui.title.innerText = catName;
         ui.searchInput.placeholder = `Search in ${catName}...`;
         
-        // Push state so HW back button returns to categories
         history.pushState({ view: 'products', catId }, '');
-        loadProducts();
+        loadProducts(true);
       }
     }
 
     ui.btnBack.addEventListener('click', () => {
       if (navigator.vibrate) navigator.vibrate(10);
-      history.back(); // Triggers popstate which handles the switch
+      history.back(); 
     });
 
     // --- 3. Keyword Generator ---
@@ -435,7 +500,6 @@
       const map = {};
       const combined = `${str1} ${str2} ${str3}`.toLowerCase().replace(/[^a-z0-9 ]/g, '');
       const words = combined.split(' ').filter(w => w.trim().length > 0);
-      
       words.forEach(word => {
         let prefix = '';
         for (let i = 0; i < word.length; i++) {
@@ -446,17 +510,32 @@
       return map;
     }
 
-    // --- 4. Firestore Fetching (Categories) ---
+    // --- 4. Firestore Exception Handler ---
+    function handleFirestoreError(err, container) {
+      console.error(err);
+      if (err.message && err.message.includes('index')) {
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-sub);">Database index building required.</div>`;
+        const urlMatch = err.message.match(/https:\/\/console\.firebase\.google\.com[^\s]*/);
+        if (urlMatch) {
+          document.getElementById('index-link').href = urlMatch[0];
+          openModal('dialog-index');
+        }
+      } else {
+        container.innerHTML = `<div style="text-align:center; padding:40px; color:var(--danger);">Error loading data.</div>`;
+      }
+    }
+
+    // --- 5. Fetch Categories ---
     async function loadCategories() {
       ui.feed.className = 'feed-container grid-layout';
-      ui.feed.innerHTML = Array(6).fill(`<div class="cat-card" style="pointer-events:none;"><div class="skeleton cat-img-wrap"></div><div class="cat-details"><div class="skeleton" style="height:16px; width:80%;"></div></div></div>`).join('');
+      ui.feed.innerHTML = Array(6).fill(`<div class="cat-card" style="pointer-events:none;"><div class="skeleton cat-img-wrap"></div><div class="cat-details"><div class="skeleton" style="height:18px; width:80%;"></div></div></div>`).join('');
       
       try {
         let q;
         if (STATE.searchQuery) {
-          q = query(collection(db, "categories"), where(`searchKeywords.${STATE.searchQuery}`, "==", true), limit(20));
+          q = query(collection(db, "categories"), where(`searchKeywords.${STATE.searchQuery}`, "==", true), limit(30));
         } else {
-          q = query(collection(db, "categories"), orderBy("name"), limit(20));
+          q = query(collection(db, "categories"), orderBy("name"), limit(30));
         }
         
         const snap = await getDocs(q);
@@ -475,8 +554,8 @@
           card.className = 'cat-card';
           card.innerHTML = `
             <div class="cat-img-wrap">
-              ${cat.imageUrl ? `<img src="${cat.imageUrl}" class="cat-img">` : `<div class="cat-img" style="display:flex;align-items:center;justify-content:center;background:var(--skeleton-base);color:var(--text-sub);">No Image</div>`}
-              <button class="btn-edit-cat" data-id="${cat.id}"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.89 1.127l-3.196.1a.375.375 0 01-.423-.423l.1-3.196a4.5 4.5 0 011.127-1.89l14.312-14.31z"/></svg></button>
+              ${cat.imageUrl ? `<img src="${cat.imageUrl}" class="cat-img">` : `<div class="cat-img" style="display:flex;align-items:center;justify-content:center;background:var(--skeleton-base);color:var(--text-sub);font-size:14px;font-weight:700;">No Image</div>`}
+              <button class="btn-edit-item" data-type="cat"><svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.89 1.127l-3.196.1a.375.375 0 01-.423-.423l.1-3.196a4.5 4.5 0 011.127-1.89l14.312-14.31z"/></svg></button>
             </div>
             <div class="cat-details">
               <div class="cat-name">${cat.name}</div>
@@ -484,13 +563,11 @@
             </div>
           `;
           
-          // Edit Cat Event
-          card.querySelector('.btn-edit-cat').addEventListener('click', (e) => {
+          card.querySelector('.btn-edit-item').addEventListener('click', (e) => {
             e.stopPropagation();
             openCategoryForm(cat);
           });
 
-          // Open Cat Event
           card.addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(10);
             switchView('products', cat.id, cat.name);
@@ -500,31 +577,46 @@
         });
 
       } catch (err) {
-        console.error(err);
-        ui.feed.innerHTML = `<div style="text-align:center; padding:40px; color:var(--danger);">Error loading data.</div>`;
+        handleFirestoreError(err, ui.feed);
       }
     }
 
-    // --- 5. Firestore Fetching (Products) ---
-    async function loadProducts() {
-      ui.feed.className = 'feed-container'; // List layout
-      ui.feed.innerHTML = Array(5).fill(`<div class="prod-card" style="pointer-events:none;"><div class="skeleton prod-img"></div><div class="prod-info"><div class="skeleton" style="height:16px; width:70%;"></div><div class="skeleton" style="height:12px; width:40%;"></div></div></div>`).join('');
-      
+    // --- 6. Fetch Products ---
+    async function loadProducts(isNew = true) {
+      if (isNew) {
+        ui.feed.className = 'feed-container'; 
+        ui.feed.innerHTML = Array(6).fill(`<div class="prod-card" style="pointer-events:none;"><div class="skeleton prod-img"></div><div class="prod-info"><div class="skeleton" style="height:18px; width:70%;"></div><div class="skeleton" style="height:14px; width:40%;"></div></div></div>`).join('');
+        STATE.lastProdDoc = null;
+        STATE.hasMoreProd = true;
+      }
+
+      if (!STATE.hasMoreProd) return;
+
       try {
         let q;
         if (STATE.searchQuery) {
-          q = query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), where(`searchKeywords.${STATE.searchQuery}`, "==", true), limit(20));
+          q = isNew 
+            ? query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), where(`searchKeywords.${STATE.searchQuery}`, "==", true), limit(15))
+            : query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), where(`searchKeywords.${STATE.searchQuery}`, "==", true), startAfter(STATE.lastProdDoc), limit(15));
         } else {
-          q = query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), orderBy("name"), limit(20));
+          // Requires Composite Index on categoryId + name!
+          q = isNew
+            ? query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), orderBy("name"), limit(15))
+            : query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), orderBy("name"), startAfter(STATE.lastProdDoc), limit(15));
         }
         
         const snap = await getDocs(q);
-        ui.feed.innerHTML = '';
+        
+        if (isNew) ui.feed.innerHTML = '';
         
         if (snap.empty) {
-          ui.feed.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-sub);">No products in this catalog yet.</div>`;
+          if (isNew) ui.feed.innerHTML = `<div style="text-align:center; padding:40px; color:var(--text-sub);">No products in this catalog yet.</div>`;
+          STATE.hasMoreProd = false;
           return;
         }
+
+        if (snap.docs.length < 15) STATE.hasMoreProd = false;
+        STATE.lastProdDoc = snap.docs[snap.docs.length - 1];
 
         snap.forEach(docSnap => {
           const prod = { id: docSnap.id, ...docSnap.data() };
@@ -532,7 +624,7 @@
           const card = document.createElement('div');
           card.className = 'prod-card';
           card.innerHTML = `
-            <img class="prod-img" src="${prod.imageUrl || ''}" onerror="this.style.display='none'">
+            ${prod.imageUrl ? `<img class="prod-img" src="${prod.imageUrl}">` : `<div class="prod-img" style="display:flex;align-items:center;justify-content:center;color:var(--text-sub);font-size:12px;font-weight:700;">No Img</div>`}
             <div class="prod-info">
               <div class="prod-name">${prod.name}</div>
               ${prod.code ? `<div class="prod-code">${prod.code}</div>` : ''}
@@ -548,24 +640,30 @@
         });
 
       } catch (err) {
-        console.error(err);
-        ui.feed.innerHTML = `<div style="text-align:center; padding:40px; color:var(--danger);">Error loading data.</div>`;
+        handleFirestoreError(err, ui.feed);
       }
     }
 
-    // --- Search Engine ---
+    // Infinite Scroll
+    ui.feed.addEventListener('scroll', () => {
+      if (STATE.view === 'products' && STATE.hasMoreProd) {
+        if (ui.feed.scrollTop + ui.feed.clientHeight >= ui.feed.scrollHeight - 100) {
+          loadProducts(false);
+        }
+      }
+    });
+
     let searchDebounce;
     ui.searchInput.addEventListener('input', (e) => {
       clearTimeout(searchDebounce);
       STATE.searchQuery = e.target.value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
-      
       searchDebounce = setTimeout(() => {
         if (STATE.view === 'categories') loadCategories();
-        else loadProducts();
+        else loadProducts(true);
       }, 400);
     });
 
-    // --- 6. Form Management ---
+    // --- 7. Forms ---
     ui.fab.addEventListener('click', () => {
       if (STATE.view === 'categories') openCategoryForm(null);
       else openProductForm(null);
@@ -579,6 +677,7 @@
       document.getElementById('sheet-cat-title').innerText = catData ? 'Edit Catalog' : 'Add Catalog';
       document.getElementById('cat-name').value = catData ? catData.name : '';
       document.getElementById('cat-desc').value = catData ? (catData.description || '') : '';
+      document.getElementById('cat-danger-zone').style.display = catData ? 'block' : 'none';
       
       const imgPreview = document.getElementById('cat-img-preview');
       const box = document.getElementById('cat-img-picker');
@@ -616,42 +715,30 @@
       openModal('sheet-product');
     }
 
-    // --- 7. Native Camera & Canvas Compression Engine ---
+    // --- 8. Crop Engine (Dark Room) & Camera ---
     document.getElementById('cat-img-picker').addEventListener('click', () => openModal('sheet-source'));
     document.getElementById('prod-img-picker').addEventListener('click', () => openModal('sheet-source'));
 
     document.getElementById('btn-open-gallery').addEventListener('click', () => {
       document.getElementById('hidden-file').click();
-      history.back(); // Close source picker sheet
+      history.back(); // close source sheet
     });
 
-    document.getElementById('hidden-file').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      processAndCompressFile(file);
-    });
-
-    // In-App Camera Variables
     let videoStream = null;
     const videoEl = document.getElementById('camera-video');
 
-    document.getElementById('btn-open-camera').addEventListener('click', async () => {
-      history.back(); // close source sheet
-      setTimeout(startCamera, 300); // Wait for transition
+    document.getElementById('btn-open-camera').addEventListener('click', () => {
+      history.back(); 
+      setTimeout(startCamera, 300); 
     });
 
     async function startCamera() {
       document.getElementById('cam-fallback').style.display = 'none';
       openModal('modal-camera');
-      
       try {
-        videoStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { facingMode: 'environment', width: { ideal: 1280 } }, 
-          audio: false 
-        });
+        videoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false });
         videoEl.srcObject = videoStream;
       } catch (err) {
-        console.error("Camera Error:", err);
         document.getElementById('cam-fallback').style.display = 'flex';
       }
     }
@@ -666,78 +753,149 @@
     document.getElementById('btn-capture-photo').addEventListener('click', () => {
       if (navigator.vibrate) navigator.vibrate(20);
       if (!videoStream) return;
-
-      // Draw video frame to canvas
       const canvas = document.createElement('canvas');
-      canvas.width = videoEl.videoWidth;
-      canvas.height = videoEl.videoHeight;
-      const ctx = canvas.getContext('2d');
-      ctx.drawImage(videoEl, 0, 0, canvas.width, canvas.height);
-      
-      // Compress
-      const base64Img = canvas.toDataURL('image/jpeg', 0.8);
-      
-      // Save temp and update UI
-      applyCompressedImage(base64Img);
-      
-      history.back(); // Close camera modal
+      canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight;
+      canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
+      const base64Img = canvas.toDataURL('image/jpeg', 0.9);
+      history.back(); // close camera
+      setTimeout(() => initCropEngine(base64Img), 100); // Route instantly to crop engine
     });
 
-    function processAndCompressFile(file) {
+    document.getElementById('hidden-file').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = (event) => {
-        const img = new Image();
-        img.src = event.target.result;
-        img.onload = () => {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 1200;
-          const MAX_HEIGHT = 1200;
-          let width = img.width;
-          let height = img.height;
+      reader.onload = (event) => initCropEngine(event.target.result);
+      e.target.value = '';
+    });
 
-          if (width > height) {
-            if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
-          } else {
-            if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
-          }
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
+    // Dark Room Crop Logic
+    const cropImgTarget = document.getElementById('crop-target-img');
+    const cropArea = document.getElementById('crop-area');
+    const cropSquare = document.getElementById('crop-square');
+    
+    let cropScale = 1, cropX = 0, cropY = 0, startX = 0, startY = 0;
+    let isDragging = false, imgOrigW = 0, imgOrigH = 0, squareSize = 300;
+
+    function initCropEngine(base64Data) {
+      const tempImg = new Image();
+      tempImg.onload = () => {
+        cropImgTarget.style.opacity = '0';
+        cropImgTarget.style.transition = 'opacity 0.3s ease';
+        cropImgTarget.src = base64Data;
+
+        openModal('modal-crop');
+
+        setTimeout(() => {
+          imgOrigW = tempImg.width;
+          imgOrigH = tempImg.height;
+          squareSize = cropSquare.offsetWidth;
+
+          const scaleX = squareSize / imgOrigW;
+          const scaleY = squareSize / imgOrigH;
+          cropScale = Math.max(scaleX, scaleY); // Cover
           
-          const base64Img = canvas.toDataURL('image/jpeg', 0.8);
-          applyCompressedImage(base64Img);
-        };
+          const displayW = imgOrigW * cropScale;
+          const displayH = imgOrigH * cropScale;
+          const areaRect = cropArea.getBoundingClientRect();
+          
+          cropX = (areaRect.width - displayW) / 2;
+          cropY = (areaRect.height - displayH) / 2;
+          
+          updateCropTransform();
+          cropImgTarget.style.opacity = '1';
+        }, 400); // Wait for modal animation
       };
+      tempImg.src = base64Data;
     }
 
-    function applyCompressedImage(base64Img) {
-      STATE.tempBase64Img = base64Img;
+    function updateCropTransform() {
+      const areaRect = cropArea.getBoundingClientRect();
+      const sqRect = cropSquare.getBoundingClientRect();
+      
+      const minX = sqRect.right - areaRect.left - (imgOrigW * cropScale);
+      const maxX = sqRect.left - areaRect.left;
+      const minY = sqRect.bottom - areaRect.top - (imgOrigH * cropScale);
+      const maxY = sqRect.top - areaRect.top;
+      
+      if(cropX > maxX) cropX = maxX;
+      if(cropX < minX) cropX = minX;
+      if(cropY > maxY) cropY = maxY;
+      if(cropY < minY) cropY = minY;
+
+      cropImgTarget.style.transform = `translate(${cropX}px, ${cropY}px) scale(${cropScale})`;
+    }
+
+    const onStart = (e) => {
+      isDragging = true;
+      cropImgTarget.style.transition = 'none'; 
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      startX = clientX - cropX;
+      startY = clientY - cropY;
+    };
+    const onMove = (e) => {
+      if(!isDragging) return;
+      e.preventDefault();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      cropX = clientX - startX;
+      cropY = clientY - startY;
+      updateCropTransform();
+    };
+    const onEnd = () => { isDragging = false; };
+    
+    cropArea.addEventListener('mousedown', onStart);
+    cropArea.addEventListener('touchstart', onStart, {passive: false});
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, {passive: false});
+    window.addEventListener('mouseup', onEnd);
+    window.addEventListener('touchend', onEnd);
+
+    document.getElementById('btn-crop-confirm').addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(15);
+      const btn = document.getElementById('btn-crop-confirm');
+      btn.innerText = 'Processing...'; btn.style.pointerEvents = 'none';
+
+      const sqRect = cropSquare.getBoundingClientRect();
+      const areaRect = cropArea.getBoundingClientRect();
+      
+      const sqX = sqRect.left - areaRect.left;
+      const sqY = sqRect.top - areaRect.top;
+      const sourceX = (sqX - cropX) / cropScale;
+      const sourceY = (sqY - cropY) / cropScale;
+      const sourceSize = squareSize / cropScale;
+      
+      const canvas = document.createElement('canvas');
+      canvas.width = 800; canvas.height = 800;
+      canvas.getContext('2d').drawImage(cropImgTarget, sourceX, sourceY, sourceSize, sourceSize, 0, 0, 800, 800);
+      
+      const base64Final = canvas.toDataURL('image/jpeg', 0.85);
+      STATE.tempBase64Img = base64Final;
       
       if (STATE.pendingImgTarget === 'cat') {
-        const img = document.getElementById('cat-img-preview');
-        img.src = base64Img;
+        document.getElementById('cat-img-preview').src = base64Final;
         document.getElementById('cat-img-picker').classList.add('has-image');
       } else {
-        const img = document.getElementById('prod-img-preview');
-        img.src = base64Img;
+        document.getElementById('prod-img-preview').src = base64Final;
         document.getElementById('prod-img-picker').classList.add('has-image');
       }
-    }
+
+      btn.innerText = 'Confirm'; btn.style.pointerEvents = 'auto';
+      history.back(); // close crop
+    });
 
     async function uploadToImgBB(base64Data) {
-      const cleanBase64 = base64Data.split(',')[1];
       const formData = new FormData();
-      formData.append('image', cleanBase64);
-      
+      formData.append('image', base64Data.split(',')[1]);
       const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, { method: 'POST', body: formData });
       const data = await res.json();
       if (!data.success) throw new Error("Upload Failed");
       return data.data.url;
     }
 
-    // --- 8. Save Logic (Firestore) ---
+    // --- 9. Save Operations (Cat & Prod) ---
     document.getElementById('btn-save-cat').addEventListener('click', async (e) => {
       const name = document.getElementById('cat-name').value.trim();
       const desc = document.getElementById('cat-desc').value.trim();
@@ -748,14 +906,10 @@
 
       try {
         let finalImageUrl = STATE.editContext ? STATE.editContext.imageUrl : null;
-        if (STATE.tempBase64Img) {
-          finalImageUrl = await uploadToImgBB(STATE.tempBase64Img);
-        }
+        if (STATE.tempBase64Img) finalImageUrl = await uploadToImgBB(STATE.tempBase64Img);
 
         const payload = {
-          name,
-          description: desc,
-          imageUrl: finalImageUrl,
+          name, description: desc, imageUrl: finalImageUrl,
           searchKeywords: generateKeywordMap(name, desc),
           updatedAt: new Date().toISOString()
         };
@@ -767,11 +921,11 @@
           await addDoc(collection(db, "categories"), payload);
         }
 
-        history.back(); // Close sheet
+        history.back();
         loadCategories();
       } catch (err) {
         console.error(err);
-        alert("Failed to save catalog.");
+        alert("Failed to save.");
       }
       btn.innerText = 'Save Catalog'; btn.style.pointerEvents = 'auto';
     });
@@ -787,16 +941,11 @@
 
       try {
         let finalImageUrl = STATE.editContext ? STATE.editContext.imageUrl : null;
-        if (STATE.tempBase64Img) {
-          finalImageUrl = await uploadToImgBB(STATE.tempBase64Img);
-        }
+        if (STATE.tempBase64Img) finalImageUrl = await uploadToImgBB(STATE.tempBase64Img);
 
         const payload = {
           categoryId: STATE.activeCatId,
-          name,
-          code,
-          description: desc,
-          imageUrl: finalImageUrl,
+          name, code, description: desc, imageUrl: finalImageUrl,
           searchKeywords: generateKeywordMap(name, code, desc),
           updatedAt: new Date().toISOString()
         };
@@ -808,14 +957,9 @@
           await addDoc(collection(db, "products"), payload);
         }
 
-        history.back(); // Close sheet
-        
-        // If we were editing from detail view, close that too
-        if (STATE.modalStack.includes('modal-product-detail')) {
-           history.back();
-        }
-        
-        loadProducts();
+        history.back(); // close form
+        if (STATE.modalStack.includes('modal-product-detail')) history.back(); // close detail view if open
+        loadProducts(true);
       } catch (err) {
         console.error(err);
         alert("Failed to save product.");
@@ -823,11 +967,9 @@
       btn.innerText = 'Save Product'; btn.style.pointerEvents = 'auto';
     });
 
-    // --- 9. Product Detail & Zoom View ---
-    let currentDetailProd = null;
-
+    // --- 10. Product Detail & Zoom ---
     function openProductDetail(prod) {
-      currentDetailProd = prod;
+      STATE.editContext = prod;
       document.getElementById('pd-name').innerText = prod.name;
       document.getElementById('pd-code').innerText = prod.code || '';
       document.getElementById('pd-code').style.display = prod.code ? 'block' : 'none';
@@ -845,32 +987,80 @@
     }
 
     document.getElementById('pd-img-wrap').addEventListener('click', () => {
-      if (!currentDetailProd || !currentDetailProd.imageUrl) return;
-      document.getElementById('zoom-img').src = currentDetailProd.imageUrl;
+      if (!STATE.editContext || !STATE.editContext.imageUrl) return;
+      document.getElementById('zoom-img').src = STATE.editContext.imageUrl;
       openModal('viewer-zoom');
     });
 
-    document.getElementById('pd-btn-edit').addEventListener('click', () => {
-      openProductForm(currentDetailProd);
+    document.getElementById('pd-btn-edit').addEventListener('click', () => openProductForm(STATE.editContext));
+
+    // --- 11. Master Deletion Engine (Batch + Modals) ---
+    let pendingDeleteMode = null; // 'cat' or 'prod'
+
+    document.getElementById('btn-req-delete-cat').addEventListener('click', () => {
+      pendingDeleteMode = 'cat';
+      document.getElementById('dialog-title').innerText = "Delete Catalog?";
+      document.getElementById('dialog-desc').innerText = "This will permanently delete this catalog AND all products inside it.";
+      openModal('dialog-confirm');
     });
 
-    document.getElementById('pd-btn-delete').addEventListener('click', async () => {
-      if (!confirm("Delete this product permanently?")) return;
-      
+    document.getElementById('pd-btn-delete').addEventListener('click', () => {
+      pendingDeleteMode = 'prod';
+      document.getElementById('dialog-title').innerText = "Delete Product?";
+      document.getElementById('dialog-desc').innerText = "This action cannot be undone.";
+      openModal('dialog-confirm');
+    });
+
+    document.getElementById('btn-confirm-execute').addEventListener('click', async (e) => {
+      if (navigator.vibrate) navigator.vibrate(20);
+      const btn = e.target;
+      btn.innerText = 'Deleting...'; btn.style.pointerEvents = 'none';
+
       try {
-        await deleteDoc(doc(db, "products", currentDetailProd.id));
-        history.back(); // Close detail view
-        loadProducts();
+        if (pendingDeleteMode === 'prod') {
+          await deleteDoc(doc(db, "products", STATE.editContext.id));
+          history.back(); // close confirm
+          history.back(); // close product detail
+          loadProducts(true);
+        } 
+        else if (pendingDeleteMode === 'cat') {
+          // Batch 450 deletion algorithm
+          const q = query(collection(db, "products"), where("categoryId", "==", STATE.editContext.id));
+          const snap = await getDocs(q);
+          
+          let batches = [];
+          let currentBatch = writeBatch(db);
+          let opCount = 0;
+
+          snap.forEach(docSnap => {
+            currentBatch.delete(docSnap.ref);
+            opCount++;
+            if (opCount === 450) {
+              batches.push(currentBatch);
+              currentBatch = writeBatch(db);
+              opCount = 0;
+            }
+          });
+          
+          currentBatch.delete(doc(db, "categories", STATE.editContext.id));
+          batches.push(currentBatch);
+
+          for (let b of batches) await b.commit();
+
+          history.back(); // close confirm
+          history.back(); // close cat sheet
+          loadCategories();
+        }
       } catch (err) {
-        alert("Failed to delete product.");
+        console.error(err);
+        alert("Delete failed.");
       }
+
+      btn.innerText = 'Delete'; btn.style.pointerEvents = 'auto';
     });
 
-    // Initialize
-    onAuthStateChanged(auth, (user) => {
-      if (user) switchView('categories');
-    });
-
+    // Boot
+    onAuthStateChanged(auth, (user) => { if (user) switchView('categories'); });
   </script>
 </body>
 </html>
