@@ -54,15 +54,15 @@
     .search-wrap { position: relative; width: 100%; display: flex; align-items: center; }
     .search-wrap svg { position: absolute; left: 16px; width: 20px; height: 20px; stroke: var(--text-sub); stroke-width: 2.5; transition: stroke 0.3s ease; pointer-events: none; }
     
-    /* Search bar color matches body bg-color as requested */
-    .search-input { width: 100%; padding: 14px 16px 14px 46px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-color); color: var(--text-main); font-size: 15px; outline: none; transition: border-color 0.2s, box-shadow 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    /* Search bar perfectly matches body background */
+    .search-input { width: 100%; padding: 14px 16px 14px 46px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--bg-color); color: var(--text-main); font-size: 15px; outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
     .search-input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(40,116,240,0.1); background: var(--surface-color); }
     .search-input:focus + svg { stroke: var(--primary); }
 
     /* Scrollable Feeds */
     .feed-container { flex: 1; overflow-y: auto; padding: 16px; padding-bottom: 120px; display: flex; flex-direction: column; gap: 16px; transition: opacity 0.3s ease; }
     
-    /* grid-layout updated to align-items: start to fix height stretching bug */
+    /* Fixed: align-items: start absolutely prevents grid height stretching bugs */
     .grid-layout { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; align-items: start; }
     @media (min-width: 600px) { .grid-layout { grid-template-columns: repeat(3, 1fr); } }
 
@@ -98,28 +98,28 @@
     .fab svg { width: 30px; height: 30px; stroke: currentColor; stroke-width: 2.5; }
 
     /* =========================================
-       Z-INDEX LADDER (Strictly Enforced)
-       100: FAB
-       2000: Full-Screen Modals (Detail, Camera, Crop)
-       3000: Bottom Sheet Overlays
-       3001: Bottom Sheets (Add/Edit Forms)
-       4000: Dialog Overlays
-       4001: Dialogs
-       5000: Zoom Viewer
+       MASTER Z-INDEX LADDER
        ========================================= */
-
-    /* Full Screen Modals (Layer 2000) */
     .fs-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg-color); z-index: 2000; transform: translateY(100%); transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); display: flex; flex-direction: column; }
     .fs-modal.active { transform: translateY(0); }
 
-    /* Shared Bottom Sheet Overlay (Layer 3000) */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 3000; }
     .modal-overlay.active { opacity: 1; pointer-events: auto; }
     
-    /* Bottom Sheets (Layer 3001) */
     .bottom-sheet { position: fixed; bottom: 0; left: 50%; transform: translate(-50%, 100%); width: 100%; max-width: 600px; background: var(--bg-color); border-radius: 24px 24px 0 0; transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1); display: flex; flex-direction: column; box-shadow: 0 -10px 40px rgba(0,0,0,0.2); max-height: 90vh; z-index: 3001; }
     .bottom-sheet.active { transform: translate(-50%, 0); }
-    
+
+    #sheet-source { z-index: 3005; } /* Picker always absolutely top of sheets */
+
+    .dialog-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 4000; opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(4px); }
+    .dialog-overlay.active { opacity: 1; pointer-events: auto; }
+    .dialog-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); background: var(--surface-color); width: 90%; max-width: 340px; border-radius: 24px; padding: 24px; z-index: 4001; opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
+    .dialog-box.active { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+
+    #modal-camera, #modal-crop { z-index: 5000; }
+    #viewer-zoom { z-index: 6000; }
+
+    /* Bottom Sheet Header & Form Components */
     .sheet-header { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: var(--surface-color); border-bottom: 1px solid var(--border); border-radius: 24px 24px 0 0; position: sticky; top: 0; z-index: 10; }
     .sheet-title { font-size: 18px; font-weight: 800; color: var(--text-main); }
     .btn-icon { background: var(--bg-color); border: 1px solid var(--border); color: var(--text-main); width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; border-radius: 50%; transition: transform 0.1s; }
@@ -144,8 +144,8 @@
     .btn-danger-ghost { background: transparent; border: 2px solid var(--danger-bg); color: var(--danger); }
     .btn-danger-ghost:active { background: var(--danger-bg); }
 
-    /* Fixed Image Picker UI */
-    .image-picker-box { width: 100%; aspect-ratio: 1; max-width: 240px; margin: 0 auto; background: var(--surface-color); border: 2px dashed var(--border); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; color: var(--text-sub); transition: border-color 0.2s; }
+    /* Image Picker UI (100% width, absolutely perfectly squared, NO SKEW) */
+    .image-picker-box { width: 100%; max-width: none; aspect-ratio: 1; margin: 0 auto; background: var(--surface-color); border: 2px dashed var(--border); border-radius: 24px; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; position: relative; color: var(--text-sub); transition: border-color 0.2s; }
     .image-picker-box:active { border-color: var(--primary); }
     
     .placeholder-content { display: flex; flex-direction: column; align-items: center; justify-content: center; pointer-events: none; }
@@ -183,46 +183,46 @@
     .btn-crop:active { transform: scale(0.96); }
     .btn-crop-retake { background: #2a2a2a; color: #fff; border: 1px solid #444; }
 
-    /* Product Detail View (Refactored for unified scrolling) */
-    .fs-header { display: flex; align-items: center; justify-content: space-between; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; background: var(--surface-color); border-bottom: 1px solid var(--border); z-index: 20; position: sticky; top: 0; }
+    /* Product Detail Parallax Scroll View */
+    .fs-header-transparent { position: absolute; top: 0; left: 0; width: 100%; display: flex; align-items: center; justify-content: space-between; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; background: linear-gradient(to bottom, rgba(0,0,0,0.5), transparent); z-index: 20; pointer-events: none; }
+    .fs-header-transparent .btn-icon { background: rgba(255,255,255,0.25); color: #fff; border: none; backdrop-filter: blur(4px); pointer-events: auto; }
     
-    .detail-scroll-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-    .detail-img-wrap { width: 100%; aspect-ratio: 1; background: var(--surface-color); display: flex; align-items: center; justify-content: center; border-bottom: 1px solid var(--border); cursor: zoom-in; flex-shrink: 0; }
-    .detail-img { width: 100%; height: 100%; object-fit: contain; }
+    .detail-scroll-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
     
-    .detail-info { padding: 24px; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+    .detail-img-wrap { width: 100%; height: 50vh; background: var(--bg-color); display: flex; align-items: center; justify-content: center; cursor: zoom-in; position: sticky; top: 0; z-index: 1; flex-shrink: 0; }
+    .detail-img { width: 100%; height: 100%; object-fit: cover; }
+    
+    .detail-info-container { position: relative; z-index: 2; background: var(--surface-color); min-height: 55vh; border-radius: 24px 24px 0 0; margin-top: -24px; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); display: flex; flex-direction: column; }
+    .detail-pull-bar { width: 40px; height: 5px; background: var(--border); border-radius: 3px; margin: 12px auto 4px; }
+    
+    .detail-info { padding: 20px 24px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
     .detail-title { font-size: 24px; font-weight: 800; color: var(--text-main); line-height: 1.3; }
-    .detail-price-row { display: flex; align-items: center; gap: 12px; }
+    .detail-price-row { display: flex; align-items: center; gap: 12px; margin-top: 4px; }
     .detail-price { font-size: 24px; font-weight: 800; color: var(--primary); }
     .detail-brand { font-size: 12px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; background: var(--bg-color); padding: 4px 10px; border-radius: 6px; border: 1px solid var(--border); }
-    .detail-code { font-size: 14px; color: var(--text-sub); font-weight: 700; background: var(--bg-color); padding: 6px 12px; border-radius: 8px; width: max-content; border: 1px solid var(--border); }
-    .detail-desc { font-size: 15px; color: var(--text-sub); line-height: 1.6; white-space: pre-wrap; font-weight: 500; margin-top: 8px; }
+    .detail-code { font-size: 14px; color: var(--text-sub); font-weight: 700; background: var(--bg-color); padding: 6px 12px; border-radius: 8px; width: max-content; border: 1px solid var(--border); margin-top: 8px; }
+    .detail-desc { font-size: 15px; color: var(--text-sub); line-height: 1.6; white-space: pre-wrap; font-weight: 500; margin-top: 12px; }
     
-    .action-row { display: flex; gap: 12px; padding: 20px; border-top: 1px solid var(--border); background: var(--surface-color); padding-bottom: max(20px, env(safe-area-inset-bottom)); flex-shrink: 0; }
-    .btn-outline { flex: 1; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: 2px solid var(--border); background: transparent; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
+    .action-row { padding: 20px 24px; border-top: 1px solid var(--border); padding-bottom: max(20px, env(safe-area-inset-bottom)); flex-shrink: 0; }
+    .btn-outline { width: 100%; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: 2px solid var(--border); background: transparent; color: var(--text-main); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
     .btn-outline:active { transform: scale(0.97); background: var(--bg-color); }
     
-    /* Full Screen Image Zoom (Layer 5000) */
-    .zoom-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 5000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; }
+    /* Full Screen Image Zoom (Layer 6000) */
+    .zoom-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 6000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; }
     .zoom-viewer.active { opacity: 1; pointer-events: auto; }
     .zoom-header { position: absolute; top: 0; left: 0; width: 100%; padding: calc(16px + env(safe-area-inset-top)) 16px; display: flex; justify-content: flex-start; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); }
     .zoom-content { flex: 1; display: flex; align-items: center; justify-content: center; overflow: auto; touch-action: pan-x pan-y pinch-zoom; }
     .zoom-content img { max-width: 100%; max-height: 100%; object-fit: contain; }
 
-    /* Central Confirm Dialog & Index Helper (Layers 4000/4001) */
-    .dialog-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 4000; opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(4px); }
-    .dialog-overlay.active { opacity: 1; pointer-events: auto; }
-    .dialog-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); background: var(--surface-color); width: 90%; max-width: 340px; border-radius: 24px; padding: 24px; z-index: 4001; opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
-    .dialog-box.active { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
-    
+    /* Dialog Helpers */
     .dialog-icon { width: 64px; height: 64px; border-radius: 50%; background: var(--danger-bg); color: var(--danger); display: flex; align-items: center; justify-content: center; margin: 0 auto 16px; }
     .dialog-icon svg { width: 32px; height: 32px; stroke: currentColor; stroke-width: 2.5; }
     .dialog-title { font-size: 20px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; }
     .dialog-desc { font-size: 15px; color: var(--text-sub); margin-bottom: 24px; line-height: 1.5; font-weight: 500; }
     .dialog-actions { display: flex; gap: 12px; }
 
-    /* Utilities */
-    .skeleton { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 200% 100% !important; animation: shimmer 1.5s infinite !important; border-radius: 12px; }
+    /* Skeletons */
+    .skeleton { background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%) !important; background-size: 200% 100% !important; animation: shimmer 1.5s infinite !important; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
     #hidden-file { display: none; }
   </style>
@@ -244,35 +244,54 @@
       </div>
     </header>
 
-    <!-- 0ms Skeletons inside DOM for perfect loading -->
+    <!-- 0ms Multi-line Skeletons inside DOM for zero-flicker loading -->
     <div class="feed-container grid-layout" id="feed-container">
-      <!-- Detailed Category Skeletons -->
       <div class="cat-card" style="pointer-events:none;">
         <div class="skeleton cat-img-wrap" style="border-radius:0;"></div>
         <div class="cat-details">
-          <div class="skeleton" style="height:18px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
-          <div class="skeleton" style="height:14px; width:60%; border-radius:4px;"></div>
+          <div class="skeleton" style="height:16px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
+          <div class="skeleton" style="height:13px; width:100%; border-radius:4px; margin-bottom:2px;"></div>
+          <div class="skeleton" style="height:13px; width:60%; border-radius:4px;"></div>
         </div>
       </div>
       <div class="cat-card" style="pointer-events:none;">
         <div class="skeleton cat-img-wrap" style="border-radius:0;"></div>
         <div class="cat-details">
-          <div class="skeleton" style="height:18px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
-          <div class="skeleton" style="height:14px; width:60%; border-radius:4px;"></div>
+          <div class="skeleton" style="height:16px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
+          <div class="skeleton" style="height:13px; width:100%; border-radius:4px; margin-bottom:2px;"></div>
+          <div class="skeleton" style="height:13px; width:60%; border-radius:4px;"></div>
         </div>
       </div>
       <div class="cat-card" style="pointer-events:none;">
         <div class="skeleton cat-img-wrap" style="border-radius:0;"></div>
         <div class="cat-details">
-          <div class="skeleton" style="height:18px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
-          <div class="skeleton" style="height:14px; width:60%; border-radius:4px;"></div>
+          <div class="skeleton" style="height:16px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
+          <div class="skeleton" style="height:13px; width:100%; border-radius:4px; margin-bottom:2px;"></div>
+          <div class="skeleton" style="height:13px; width:60%; border-radius:4px;"></div>
         </div>
       </div>
       <div class="cat-card" style="pointer-events:none;">
         <div class="skeleton cat-img-wrap" style="border-radius:0;"></div>
         <div class="cat-details">
-          <div class="skeleton" style="height:18px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
-          <div class="skeleton" style="height:14px; width:60%; border-radius:4px;"></div>
+          <div class="skeleton" style="height:16px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
+          <div class="skeleton" style="height:13px; width:100%; border-radius:4px; margin-bottom:2px;"></div>
+          <div class="skeleton" style="height:13px; width:60%; border-radius:4px;"></div>
+        </div>
+      </div>
+      <div class="cat-card" style="pointer-events:none;">
+        <div class="skeleton cat-img-wrap" style="border-radius:0;"></div>
+        <div class="cat-details">
+          <div class="skeleton" style="height:16px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
+          <div class="skeleton" style="height:13px; width:100%; border-radius:4px; margin-bottom:2px;"></div>
+          <div class="skeleton" style="height:13px; width:60%; border-radius:4px;"></div>
+        </div>
+      </div>
+      <div class="cat-card" style="pointer-events:none;">
+        <div class="skeleton cat-img-wrap" style="border-radius:0;"></div>
+        <div class="cat-details">
+          <div class="skeleton" style="height:16px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
+          <div class="skeleton" style="height:13px; width:100%; border-radius:4px; margin-bottom:2px;"></div>
+          <div class="skeleton" style="height:13px; width:60%; border-radius:4px;"></div>
         </div>
       </div>
     </div>
@@ -416,11 +435,10 @@
     </div>
   </div>
 
-  <!-- 6. Product Detail View (Full Screen with Unified Scrolling) -->
+  <!-- 6. Product Detail View (Parallax Sliding Content) -->
   <div class="fs-modal" id="modal-product-detail">
-    <div class="fs-header">
+    <div class="fs-header-transparent">
       <button class="btn-icon btn-close-modal"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button>
-      <div class="sheet-title">Product Details</div>
       <button class="btn-icon" id="pd-btn-edit"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.89 1.127l-3.196.1a.375.375 0 01-.423-.423l.1-3.196a4.5 4.5 0 011.127-1.89l14.312-14.31z"/></svg></button>
     </div>
     
@@ -428,19 +446,22 @@
       <div class="detail-img-wrap" id="pd-img-wrap">
         <img id="pd-img" class="detail-img" src="">
       </div>
-      <div class="detail-info">
-        <div class="detail-title" id="pd-name">Loading...</div>
-        <div class="detail-price-row">
-          <div class="detail-price" id="pd-price">₹0</div>
-          <div class="detail-brand" id="pd-brand" style="display:none;"></div>
+      
+      <div class="detail-info-container">
+        <div class="detail-pull-bar"></div>
+        <div class="detail-info">
+          <div class="detail-title" id="pd-name">Loading...</div>
+          <div class="detail-price-row">
+            <div class="detail-price" id="pd-price">₹0</div>
+            <div class="detail-brand" id="pd-brand" style="display:none;"></div>
+          </div>
+          <div class="detail-code" id="pd-code">...</div>
+          <div class="detail-desc" id="pd-desc">...</div>
         </div>
-        <div class="detail-code" id="pd-code">...</div>
-        <div class="detail-desc" id="pd-desc">...</div>
+        <div class="action-row">
+          <button class="btn-outline btn-danger-ghost" style="border: 2px solid var(--danger-bg); color: var(--danger);" id="pd-btn-delete">Delete Product</button>
+        </div>
       </div>
-    </div>
-
-    <div class="action-row">
-      <button class="btn-outline btn-danger-ghost" style="border: 2px solid var(--danger-bg); color: var(--danger);" id="pd-btn-delete">Delete Product</button>
     </div>
   </div>
 
@@ -506,6 +527,34 @@
       dialogOverlay: document.getElementById('dialog-overlay')
     };
 
+    const SKELETONS = {
+      category: `
+        <div class="cat-card" style="pointer-events:none;">
+          <div class="skeleton cat-img-wrap" style="border-radius:0;"></div>
+          <div class="cat-details">
+            <div class="skeleton" style="height:16px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
+            <div class="skeleton" style="height:13px; width:100%; border-radius:4px; margin-bottom:2px;"></div>
+            <div class="skeleton" style="height:13px; width:60%; border-radius:4px;"></div>
+          </div>
+        </div>`,
+      product: `
+        <div class="prod-card" style="pointer-events:none;">
+          <div class="prod-img-wrap">
+            <div class="skeleton prod-img" style="border:none;"></div>
+            <div class="skeleton" style="height:10px; width:100%; border-radius:4px;"></div>
+          </div>
+          <div class="prod-info">
+            <div class="skeleton" style="height:16px; width:100%; border-radius:4px; margin-bottom:4px;"></div>
+            <div class="skeleton" style="height:13px; width:100%; border-radius:4px; margin-bottom:2px;"></div>
+            <div class="skeleton" style="height:13px; width:70%; border-radius:4px; margin-bottom:8px;"></div>
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div class="skeleton" style="height:18px; width:40%; border-radius:4px;"></div>
+              <div class="skeleton" style="height:14px; width:30%; border-radius:4px;"></div>
+            </div>
+          </div>
+        </div>`
+    };
+
     // --- 1. Routing Engine (Hardware Back Native Match) ---
     function openModal(modalId) {
       if (navigator.vibrate) navigator.vibrate(10);
@@ -564,7 +613,7 @@
         ui.btnBack.style.display = 'none';
         ui.title.innerText = 'Catalogs';
         ui.searchInput.placeholder = 'Search catalogs...';
-        loadCategories();
+        loadCategories(true);
       } else {
         STATE.activeCatId = catId;
         STATE.activeCatName = catName;
@@ -613,19 +662,13 @@
     }
 
     // --- 5. Fetch Categories ---
-    async function loadCategories() {
+    async function loadCategories(isSwitch = false) {
       ui.feed.className = 'feed-container grid-layout';
       
-      const skeletonHTML = `
-        <div class="cat-card" style="pointer-events:none;">
-          <div class="skeleton cat-img-wrap" style="border-radius:0;"></div>
-          <div class="cat-details">
-            <div class="skeleton" style="height:18px; width:80%; margin-bottom:4px; border-radius:4px;"></div>
-            <div class="skeleton" style="height:14px; width:60%; border-radius:4px;"></div>
-          </div>
-        </div>
-      `;
-      ui.feed.innerHTML = Array(6).fill(skeletonHTML).join('');
+      // Prevent replacing 0ms DOM skeletons if this is the very first load
+      if (isSwitch || !ui.feed.innerHTML.includes('pointer-events:none')) {
+         ui.feed.innerHTML = Array(6).fill(SKELETONS.category).join('');
+      }
       
       try {
         let q;
@@ -681,21 +724,7 @@
     async function loadProducts(isNew = true) {
       if (isNew) {
         ui.feed.className = 'feed-container'; 
-        
-        const skeletonHTML = `
-          <div class="prod-card" style="pointer-events:none;">
-            <div class="prod-img-wrap"><div class="skeleton prod-img"></div></div>
-            <div class="prod-info">
-              <div class="skeleton" style="height:18px; width:100%; border-radius:4px;"></div>
-              <div class="skeleton" style="height:14px; width:80%; border-radius:4px; margin-bottom:4px;"></div>
-              <div style="display:flex; justify-content:space-between; align-items:center;">
-                <div class="skeleton" style="height:20px; width:40%; border-radius:4px;"></div>
-                <div class="skeleton" style="height:16px; width:30%; border-radius:4px;"></div>
-              </div>
-            </div>
-          </div>
-        `;
-        ui.feed.innerHTML = Array(6).fill(skeletonHTML).join('');
+        ui.feed.innerHTML = Array(6).fill(SKELETONS.product).join('');
         STATE.lastProdDoc = null;
         STATE.hasMoreProd = true;
       }
@@ -709,7 +738,6 @@
             ? query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), where(`searchKeywords.${STATE.searchQuery}`, "==", true), limit(15))
             : query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), where(`searchKeywords.${STATE.searchQuery}`, "==", true), startAfter(STATE.lastProdDoc), limit(15));
         } else {
-          // Requires Composite Index: categoryId ASC, name ASC
           q = isNew
             ? query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), orderBy("name"), limit(15))
             : query(collection(db, "products"), where("categoryId", "==", STATE.activeCatId), orderBy("name"), startAfter(STATE.lastProdDoc), limit(15));
@@ -744,7 +772,7 @@
             <div class="prod-info">
               <div class="prod-name">${prod.name}</div>
               ${prod.description ? `<div class="prod-desc-preview">${prod.description}</div>` : ''}
-              <div style="display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:auto;">
                 <div class="prod-price">${priceDisplay}</div>
                 ${prod.code ? `<div class="prod-code">${prod.code}</div>` : ''}
               </div>
@@ -778,7 +806,7 @@
       clearTimeout(searchDebounce);
       STATE.searchQuery = e.target.value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
       searchDebounce = setTimeout(() => {
-        if (STATE.view === 'categories') loadCategories();
+        if (STATE.view === 'categories') loadCategories(true);
         else loadProducts(true);
       }, 400);
     });
@@ -1044,7 +1072,7 @@
         }
 
         history.back();
-        loadCategories();
+        loadCategories(true);
       } catch (err) {
         console.error(err);
         alert("Failed to save.");
@@ -1095,7 +1123,7 @@
     function openProductDetail(prod) {
       STATE.editContext = prod;
       document.getElementById('pd-name').innerText = prod.name;
-      document.getElementById('pd-price').innerText = (prod.price === 0 || !prod.price) ? '₹0' : `₹${Number(prod.price).toLocaleString('en-IN')}`;
+      document.getElementById('pd-price').innerText = (prod.price === 0 || !prod.price) ? '' : `₹${Number(prod.price).toLocaleString('en-IN')}`;
       
       if(prod.brand) {
         document.getElementById('pd-brand').innerText = prod.brand;
@@ -1104,8 +1132,12 @@
         document.getElementById('pd-brand').style.display = 'none';
       }
 
-      document.getElementById('pd-code').innerText = prod.code || '';
-      document.getElementById('pd-code').style.display = prod.code ? 'block' : 'none';
+      if(prod.code) {
+        document.getElementById('pd-code').innerText = prod.code;
+        document.getElementById('pd-code').style.display = 'block';
+      } else {
+        document.getElementById('pd-code').style.display = 'none';
+      }
       
       if(prod.description) {
         document.getElementById('pd-desc').innerText = prod.description;
@@ -1188,7 +1220,7 @@
 
           history.back(); // close confirm
           history.back(); // close cat sheet
-          loadCategories();
+          loadCategories(true);
         }
       } catch (err) {
         console.error(err);
@@ -1199,7 +1231,7 @@
     });
 
     // Boot
-    onAuthStateChanged(auth, (user) => { if (user) switchView('categories'); });
+    onAuthStateChanged(auth, (user) => { if (user) loadCategories(); });
   </script>
 </body>
 </html>
