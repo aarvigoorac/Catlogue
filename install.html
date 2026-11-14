@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#f1f3f6" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+  <title>Download - Aarvi Stores</title>
+  
+  <link rel="manifest" href="./manifest.json">
+
+  <style>
+    :root {
+      --bg-color: #f1f3f6;
+      --surface-color: #ffffff;
+      --surface-rgb: 255, 255, 255;
+      --text-main: #000000;
+      --text-sub: #666666;
+      --border: #e0e0e0;
+      --primary: #2874f0;
+      --primary-rgb: 40, 116, 240;
+      --success: #137333;
+      --success-bg: #e6f4ea;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg-color: #0f172a;
+        --surface-color: #1e293b;
+        --surface-rgb: 30, 41, 59;
+        --text-main: #f8fafc;
+        --text-sub: #94a3b8;
+        --border: #334155;
+        --success: #4ade80;
+        --success-bg: #064e3b;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      -webkit-touch-callout: none !important;
+      user-select: none !important;
+    }
+
+    html, body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* 3D Perspective Scene Container */
+    .scene-container {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 420px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* 3D Floating Card */
+    .card-3d {
+      background: var(--surface-color);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      padding: 36px 28px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
+                  0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+      transform-style: preserve-3d;
+      transform: rotateX(4deg) rotateY(-4deg);
+      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card-3d:hover {
+      transform: rotateX(0deg) rotateY(0deg) translateY(-4px);
+    }
+
+    /* App Icon 3D Floating Effect */
+    .app-icon-wrap {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto 20px auto;
+      border-radius: 24px;
+      background: linear-gradient(135deg, #2874f0, #1d4ed8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 12px 24px rgba(40, 116, 240, 0.35);
+      transform: translateZ(30px);
+      position: relative;
+    }
+
+    .app-icon-wrap img {
+      width: 64px;
+      height: 64px;
+      object-fit: contain;
+      border-radius: 14px;
+    }
+
+    .app-title {
+      font-size: 24px;
+      font-weight: 900;
+      color: var(--text-main);
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+      transform: translateZ(20px);
+    }
+
+    .app-subtitle {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 16px;
+      transform: translateZ(15px);
+    }
+
+    .app-desc {
+      font-size: 14px;
+      color: var(--text-sub);
+      line-height: 1.5;
+      margin-bottom: 28px;
+      transform: translateZ(10px);
+    }
+
+    /* Action Buttons & States */
+    .action-area {
+      width: 100%;
+      transform: translateZ(25px);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .btn-download {
+      width: 100%;
+      padding: 16px;
+      border-radius: 16px;
+      background: var(--primary);
+      color: #ffffff;
+      border: none;
+      font-size: 16px;
+      font-weight: 800;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(40, 116, 240, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: transform 0.15s, background 0.2s;
+    }
+
+    .btn-download:active {
+      transform: scale(0.96);
+    }
+
+    .btn-download svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      stroke-width: 2.5;
+      fill: none;
+    }
+
+    .btn-installed {
+      background: var(--success-bg);
+      color: var(--success);
+      box-shadow: none;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    /* 45-Second Progress Bar Container */
+    .progress-box {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .progress-box.active {
+      display: flex;
+    }
+
+    .progress-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--text-sub);
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 10px;
+      background: var(--bg-color);
+      border-radius: 50px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: var(--primary);
+      transition: width 0.1s linear;
+      border-radius: 50px;
+    }
+
+    /* Browser Warning Banner */
+    .browser-notice {
+      margin-top: 16px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-sub);
+      display: none;
+    }
+    .browser-notice.show {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="scene-container">
+    <div class="card-3d" id="card-3d">
+      
+      <div class="app-icon-wrap">
+        <img src="images/icon.png" alt="Aarvi Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ffffff\' stroke-width=\'2\'><path d=\'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\'></path></svg>'">
+      </div>
+
+      <div class="app-title">Aarvi Superstores</div>
+      <div class="app-subtitle">Catalog Maker App</div>
+      <div class="app-desc">Manage inventories, track digital collections, and export clean PDF needed lists instantly.</div>
+
+      <div class="action-area" id="action-area">
+        
+        <!-- Default Install Button -->
+        <button class="btn-download" id="btn-install">
+          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3"/></svg>
+          <span id="install-btn-text">Install App</span>
+        </button>
+
+        <!-- 45-Sec Installing Progress UI -->
+        <div class="progress-box" id="progress-box">
+          <div class="progress-meta">
+            <span id="progress-status-text">Installing...</span>
+            <span id="progress-pct">0%</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progress-fill"></div>
+          </div>
+        </div>
+
+        <div class="browser-notice" id="browser-notice">
+          For the best experience, please open this page in Google Chrome.
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // 1. Service Worker & Manifest Registration Engine
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then(reg => console.log('SW Registered:', reg.scope))
+          .catch(err => console.error('SW Failed:', err));
+      });
+    }
+
+    // 2. Environment & Installation Checks
+    const btnInstall = document.getElementById('btn-install');
+    const installBtnText = document.getElementById('install-btn-text');
+    const progressBox = document.getElementById('progress-box');
+    const progressFill = document.getElementById('progress-fill');
+    const progressPct = document.getElementById('progress-pct');
+    const progressStatusText = document.getElementById('progress-status-text');
+    const browserNotice = document.getElementById('browser-notice');
+
+    let deferredPrompt = null;
+    const INSTALL_DURATION_MS = 45000; // Exact 45 seconds animation
+
+    // Check if running as installed standalone PWA
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    // Check if browser is Chrome (or compatible Chromium)
+    const isUserAgentChrome = /CriOS|Chrome/.test(navigator.userAgent) && !/Edge|OPR|SamsungBrowser/.test(navigator.userAgent);
+
+    if (isStandalone) {
+      setInstalledState();
+    } else if (!isUserAgentChrome) {
+      // Non-chrome browser detection
+      browserNotice.classList.add('show');
+      installBtnText.innerText = "Open in Chrome";
+      btnInstall.onclick = () => {
+        alert("Please open this URL inside Google Chrome to install the Aarvi Stores PWA application.");
+      };
+    }
+
+    function setInstalledState() {
+      btnInstall.classList.add('btn-installed');
+      installBtnText.innerText = "App Installed ✓";
+      progressBox.classList.remove('active');
+    }
+
+    // 3. PWA Prompt Handler
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+
+    window.addEventListener('appinstalled', () => {
+      setInstalledState();
+      deferredPrompt = null;
+    });
+
+    // 4. Install Button Click & 45-Sec Animation Flow
+    btnInstall.addEventListener('click', async () => {
+      if (isStandalone) return;
+      if (navigator.vibrate) navigator.vibrate(30);
+
+      // Trigger native browser PWA install banner if captured
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+          deferredPrompt = null;
+        }
+      }
+
+      // Hide button and launch 45s installing animation
+      btnInstall.style.display = 'none';
+      progressBox.classList.add('active');
+
+      let startTime = Date.now();
+      
+      const interval = setInterval(() => {
+        let elapsed = Date.now() - startTime;
+        let progress = Math.min(100, Math.floor((elapsed / INSTALL_DURATION_MS) * 100));
+
+        progressFill.style.width = progress + '%';
+        progressPct.innerText = progress + '%';
+
+        if (progress < 30) {
+          progressStatusText.innerText = 'Downloading assets...';
+        } else if (progress < 70) {
+          progressStatusText.innerText = 'Caching core shell...';
+        } else if (progress < 98) {
+          progressStatusText.innerText = 'Finalizing installation...';
+        } else {
+          progressStatusText.innerText = 'Done!';
+        }
+
+        if (elapsed >= INSTALL_DURATION_MS) {
+          clearInterval(interval);
+          setInstalledState();
+        }
+      }, 100);
+    });
+
+    // 5. Gyro 3D Tilt Effect on Desktop / Mobile
+    const card = document.getElementById('card-3d');
+    window.addEventListener('mousemove', (e) => {
+      let xAxis = (window.innerWidth / 2 - e.pageX) / 25;
+      let yAxis = (window.innerHeight / 2 - e.pageY) / 25;
+      card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+    });
+
+    window.addEventListener('mouseleave', () => {
+      card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+    });
+  </script>
+</body>
+</html>
