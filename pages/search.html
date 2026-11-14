@@ -70,15 +70,15 @@
     .empty-search-state .desc { font-size: 15px; font-weight: 500; max-width: 260px; line-height: 1.4; }
 
     /* Product Cards (List View) */
-    .prod-card { background: var(--surface-color); border-radius: 16px; border: 1px solid var(--border); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); overflow: hidden; flex-shrink: 0; }
+    .prod-card { background: var(--surface-color); border-radius: 20px; border: 1px solid var(--border); display: flex; flex-direction: column; cursor: pointer; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 2px 8px rgba(0,0,0,0.02); overflow: hidden; flex-shrink: 0; }
     .prod-card:active { transform: scale(0.97); background: var(--bg-color); }
     
-    .prod-card-inner { display: flex; align-items: center; gap: 16px; padding: 12px 16px; }
+    .prod-card-inner { display: flex; align-items: center; gap: 16px; padding: 12px 16px; pointer-events: auto; }
     .prod-img-box { width: 72px; height: 72px; border-radius: 12px; background: var(--bg-color); border: 1px solid var(--border); flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; }
     .prod-img-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
     .prod-img-placeholder { color: var(--text-sub); font-size: 11px; font-weight: 700; text-transform: uppercase; }
     
-    .prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+    .prod-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
     .prod-name { font-size: 16px; font-weight: 800; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
     .prod-desc-preview { font-size: 13px; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .prod-price { font-size: 15px; font-weight: 800; color: var(--primary); margin-top: 2px; }
@@ -86,7 +86,7 @@
     /* Centered Category Tag Bar */
     .cat-tag-bar { border-top: 1px dashed var(--border); padding: 8px 12px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.02); }
     @media (prefers-color-scheme: dark) { .cat-tag-bar { background: rgba(255,255,255,0.02); } }
-    .cat-badge { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 6px; }
+    .cat-badge { font-size: 11px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; letter-spacing: 0.5px; display: flex; align-items: center; gap: 4px; }
     .cat-badge svg { width: 14px; height: 14px; stroke: currentColor; stroke-width: 2.5; }
 
     /* =========================================
@@ -195,7 +195,7 @@
 
     .detail-desc { font-size: 15px; color: var(--text-sub); line-height: 1.6; white-space: pre-wrap; font-weight: 500; margin-top: 12px; }
 
-    /* Full Screen Image Zoom */
+    /* Full Screen Image Zoom (Layer 6000) */
     .zoom-viewer { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 6000; opacity: 0; pointer-events: none; transition: opacity 0.3s; display: flex; flex-direction: column; }
     .zoom-viewer.active { opacity: 1; pointer-events: auto; }
     .zoom-header { position: absolute; top: 0; left: 0; width: 100%; padding: calc(16px + env(safe-area-inset-top)) 16px; display: flex; justify-content: flex-start; z-index: 10; background: linear-gradient(to bottom, rgba(0,0,0,0.6), transparent); }
@@ -358,7 +358,6 @@
   <div class="fs-modal" id="modal-product-detail">
     <div class="fs-header-transparent">
       <button class="btn-icon btn-close-modal"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button>
-      <button class="btn-icon" id="pd-btn-edit"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L6.832 19.82a4.5 4.5 0 01-1.89 1.127l-3.196.1a.375.375 0 01-.423-.423l.1-3.196a4.5 4.5 0 011.127-1.89l14.312-14.31z"/></svg></button>
     </div>
     
     <div class="detail-scroll-content">
@@ -455,6 +454,7 @@
       if(!el) return;
       if(el.classList.contains('bottom-sheet')) document.getElementById('main-overlay').classList.add('active');
       if(el.classList.contains('dialog-box')) ui.dialogOverlay.classList.add('active');
+      
       el.classList.add('active');
       STATE.modalStack.push(modalId);
       history.pushState({ modal: modalId }, '');
@@ -463,8 +463,10 @@
     function closeModalUI(modalId) {
       const el = document.getElementById(modalId);
       if(el) el.classList.remove('active');
+      
       const hasSheets = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('bottom-sheet'));
       if(!hasSheets) document.getElementById('main-overlay').classList.remove('active');
+      
       const hasDialogs = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('dialog-box'));
       if(!hasDialogs) ui.dialogOverlay.classList.remove('active');
     }
@@ -603,6 +605,8 @@
           
           card.addEventListener('click', () => {
             if (navigator.vibrate) navigator.vibrate(10);
+            
+            // The user requested that clicking the product card opens the product detail view
             openProductDetail(prod, catName);
           });
           
@@ -651,6 +655,11 @@
     });
 
     // --- 6. Editing System (From Search) ---
+    // The user also requested edit functionality from within the detail modal.
+    document.getElementById('pd-btn-edit').addEventListener('click', () => {
+       openProductForm(STATE.editContext);
+    });
+
     function openProductForm(prodData) {
       STATE.editContext = prodData;
       STATE.tempBase64Img = null;
@@ -710,7 +719,7 @@
       canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight;
       canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
       const base64Img = canvas.toDataURL('image/jpeg', 0.9);
-      history.back(); 
+      history.back(); // close camera
       setTimeout(() => initCropEngine(base64Img), 100); 
     });
 
@@ -883,11 +892,13 @@
     // --- 7. Product Detail & Zoom ---
     function openProductDetail(prod, categoryName) {
       STATE.editContext = prod;
+      
+      // Setup text fields
       document.getElementById('pd-name').innerText = prod.name;
       document.getElementById('pd-price').innerText = (prod.price === 0 || !prod.price) ? '' : `₹${Number(prod.price).toLocaleString('en-IN')}`;
-      
       document.getElementById('pd-cat-name').innerText = categoryName;
 
+      // Handle optional brand
       if(prod.brand) {
         document.getElementById('pd-brand').innerText = prod.brand;
         document.getElementById('pd-brand').style.display = 'block';
@@ -895,6 +906,7 @@
         document.getElementById('pd-brand').style.display = 'none';
       }
 
+      // Handle optional code
       if(prod.code) {
         document.getElementById('pd-code').innerText = prod.code;
         document.getElementById('pd-code').style.display = 'block';
@@ -902,6 +914,7 @@
         document.getElementById('pd-code').style.display = 'none';
       }
       
+      // Handle optional description
       if(prod.description) {
         document.getElementById('pd-desc').innerText = prod.description;
         document.getElementById('pd-desc').style.display = 'block';
@@ -909,26 +922,29 @@
         document.getElementById('pd-desc').style.display = 'none';
       }
       
+      // Setup image and zoom functionality
       const imgEl = document.getElementById('pd-img');
+      const imgWrap = document.getElementById('pd-img-wrap');
+      
       if (prod.imageUrl) {
         imgEl.src = prod.imageUrl;
         imgEl.style.display = 'block';
+        imgWrap.style.cursor = 'zoom-in';
         
-        document.getElementById('pd-img-wrap').onclick = () => {
+        // Ensure zoom viewer is configured for this image
+        imgWrap.onclick = () => {
            document.getElementById('zoom-img').src = prod.imageUrl;
            openModal('viewer-zoom');
         };
-        document.getElementById('pd-img-wrap').style.cursor = 'zoom-in';
       } else {
         imgEl.style.display = 'none';
-        document.getElementById('pd-img-wrap').onclick = null;
-        document.getElementById('pd-img-wrap').style.cursor = 'default';
+        imgWrap.style.cursor = 'default';
+        imgWrap.onclick = null;
       }
 
+      // Finally, open the modal via the hardware back-button engine
       openModal('modal-product-detail');
     }
-
-    document.getElementById('pd-btn-edit').addEventListener('click', () => openProductForm(STATE.editContext));
 
     // Boot: Preload Categories for Tags
     preloadCategories();
