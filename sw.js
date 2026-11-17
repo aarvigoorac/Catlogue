@@ -1,18 +1,20 @@
-const CACHE_NAME = 'aarvi-stores-v1';
+const CACHE_NAME = 'aarvi-stores-v2';
 
 // All the core shell files and views required for offline/instant loading
 const APP_SHELL = [
   './',
   './index.html',
+  './install.html',
   './config.js',
   './manifest.json',
   './images/icon.png',
   './pages/login.html',
   './pages/home.html',
   './pages/search.html',
-  './pages/cart.html',
-  './pages/orders.html',
-  './pages/account.html'
+  './pages/pdf.html',
+  './pages/settings.html',
+  './pages/setup.html',
+  './pages/users.html'
 ];
 
 // 1. Install Event: Cache the App Shell
