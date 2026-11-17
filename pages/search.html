@@ -106,6 +106,7 @@
     .dialog-overlay.active { opacity: 1; pointer-events: auto; }
     .dialog-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); background: var(--surface-color); width: 90%; max-width: 340px; border-radius: 24px; padding: 24px; z-index: 4001; opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
     .dialog-box.active { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+    #dialog-alert { z-index: 5500; }
 
     #modal-camera, #modal-crop { z-index: 5000; }
     #viewer-zoom { z-index: 6000; }
@@ -161,11 +162,34 @@
 
     /* Dark Room Crop Engine */
     .crop-editor-mode { --bg-color: #000; --surface-color: #1a1a1a; --border: #333; --text-main: #fff; }
-    .crop-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #000; touch-action: none; width: 100%; }
-    #crop-target-img { position: absolute; top: 0; left: 0; transform-origin: top left; will-change: transform; cursor: grab; }
+    .fs-header { display: flex; align-items: center; justify-content: space-between; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; z-index: 20; flex-shrink: 0; }
+    .crop-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #080808; touch-action: none; width: 100%; user-select: none; -webkit-user-select: none; }
+    .crop-bg-layer { position: absolute; width: 280px; height: 280px; border-radius: 8px; background: #ffffff; z-index: 1; pointer-events: none; transition: background 0.2s ease; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+    @media(min-width: 400px) { .crop-bg-layer { width: 340px; height: 340px; } }
+    @media(min-width: 600px) { .crop-bg-layer { width: 400px; height: 400px; } }
+    #crop-target-img { position: absolute; top: 0; left: 0; transform-origin: top left; will-change: transform; cursor: grab; z-index: 2; user-select: none; -webkit-user-drag: none; max-width: none !important; max-height: none !important; }
     #crop-target-img:active { cursor: grabbing; }
-    .crop-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; }
-    .crop-footer { padding: 24px; display: flex; gap: 16px; background: #111; padding-bottom: max(24px, env(safe-area-inset-bottom)); border-top: 1px solid #222; }
+    .crop-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; z-index: 3; }
+    #crop-square { box-shadow: 0 0 0 9999px rgba(0,0,0,0.76); border: 2px solid rgba(255,255,255,0.92); }
+    .crop-grid-lines { position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s ease; pointer-events: none; background-image: linear-gradient(to right, rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.35) 1px, transparent 1px); background-size: 33.333% 33.333%; }
+    .crop-area.interacting .crop-grid-lines { opacity: 1; }
+    .crop-toolbar { background: #111; border-top: 1px solid #222; padding: 12px 18px 4px; display: flex; flex-direction: column; gap: 12px; z-index: 10; flex-shrink: 0; }
+    .crop-controls-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .crop-mode-pills { display: flex; gap: 8px; }
+    .crop-pill-btn { background: #222; color: #ddd; border: 1px solid #383838; padding: 7px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
+    .crop-pill-btn:active { transform: scale(0.95); }
+    .crop-pill-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .crop-zoom-wrap { display: flex; align-items: center; gap: 10px; flex: 1; max-width: 220px; }
+    .crop-zoom-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 5px; border-radius: 4px; background: #333; outline: none; }
+    .crop-zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid var(--primary); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+    .crop-zoom-badge { font-size: 11px; font-weight: 800; color: #aaa; min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+    .crop-bg-bar { display: flex; align-items: center; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+    .crop-bg-label { font-size: 11px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    .crop-swatches { display: flex; align-items: center; gap: 10px; }
+    .crop-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #444; cursor: pointer; flex-shrink: 0; transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; position: relative; }
+    .crop-swatch:active { transform: scale(0.9); }
+    .crop-swatch.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(40,116,240,0.45); transform: scale(1.08); }
+    .crop-footer { padding: 14px 20px; display: flex; gap: 14px; background: #111; padding-bottom: max(20px, env(safe-area-inset-bottom)); border-top: 1px solid #1e1e1e; flex-shrink: 0; z-index: 10; }
     .btn-crop { flex: 1; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; transition: transform 0.15s; }
     .btn-crop:active { transform: scale(0.96); }
     .btn-crop-retake { background: #2a2a2a; color: #fff; border: 1px solid #444; }
@@ -327,7 +351,7 @@
       <div class="camera-overlay-square"></div>
       <div class="cam-fallback" id="cam-fallback">
         <div style="margin-bottom:16px;">Camera access denied.</div>
-        <button class="btn-master btn-primary" style="width:auto; padding:12px 24px;" onclick="document.getElementById('btn-open-gallery').click()">Open Gallery Instead</button>
+        <button class="btn-master btn-primary" style="width:auto; padding:12px 24px;" id="btn-cam-fallback-gallery">Open Gallery Instead</button>
       </div>
     </div>
     <div class="camera-controls">
@@ -340,13 +364,42 @@
     <div class="fs-header" style="background:rgba(0,0,0,0.85); border-bottom:1px solid #222;">
       <div style="display:flex; align-items:center; gap:12px;">
         <button class="btn-icon btn-close-modal" style="background:#222; color:#fff; border:none;"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button>
-        <div class="sheet-title" style="color:#fff;">Crop Square</div>
+        <div class="sheet-title" style="color:#fff;">Crop Square (1:1)</div>
       </div>
+      <div style="font-size:12px; color:#999; font-weight:700;">Pinch or Slide to Zoom</div>
     </div>
     <div class="crop-area" id="crop-area">
+      <!-- Dedicated 1:1 Background Layer behind the image -->
+      <div class="crop-bg-layer" id="crop-bg-layer"></div>
       <img id="crop-target-img" src="">
       <div class="crop-mask">
-        <div class="camera-overlay-square" id="crop-square"></div>
+        <div class="camera-overlay-square" id="crop-square">
+          <div class="crop-grid-lines"></div>
+        </div>
+      </div>
+    </div>
+    <div class="crop-toolbar">
+      <div class="crop-controls-row">
+        <div class="crop-mode-pills">
+          <button type="button" class="crop-pill-btn" id="btn-crop-fit" title="Fit entire image inside 1:1 square">Fit Full</button>
+          <button type="button" class="crop-pill-btn active" id="btn-crop-fill" title="Fill 1:1 square completely">Fill 1:1</button>
+          <button type="button" class="crop-pill-btn" id="btn-crop-center" title="Center image">Center</button>
+        </div>
+        <div class="crop-zoom-wrap">
+          <input type="range" id="crop-zoom-slider" class="crop-zoom-slider" min="10" max="400" value="100">
+          <span class="crop-zoom-badge" id="crop-zoom-badge">100%</span>
+        </div>
+      </div>
+      <div class="crop-bg-bar">
+        <span class="crop-bg-label">1:1 Backdrop:</span>
+        <div class="crop-swatches" id="crop-swatches">
+          <button type="button" class="crop-swatch active" data-bg-type="solid" data-bg-c1="#ffffff" style="background:#ffffff;" title="Pure White"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#f5f7fa" data-bg-c2="#c3cfe2" style="background:linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);" title="Soft Studio Gradient"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#fdfcfb" data-bg-c2="#e2d1c3" style="background:linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);" title="Warm Cream Gradient"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#ffecd2" data-bg-c2="#fcb69f" style="background:linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);" title="Peach Glow Gradient"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#e0c3fc" data-bg-c2="#8ec5fc" style="background:linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);" title="Sky Lavender Gradient"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#232526" data-bg-c2="#414345" style="background:linear-gradient(135deg, #232526 0%, #414345 100%);" title="Charcoal Dark Gradient"></button>
+        </div>
       </div>
     </div>
     <div class="crop-footer">
@@ -407,6 +460,18 @@
     </div>
   </div>
 
+  <!-- Universal Mobile-Back-Supported Alert / Error Dialog -->
+  <div class="dialog-box" id="dialog-alert">
+    <div class="dialog-icon" id="alert-icon-wrap">
+      <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+    </div>
+    <div class="dialog-title" id="alert-title">Notice</div>
+    <div class="dialog-desc" id="alert-desc">Please check your input.</div>
+    <div class="dialog-actions">
+      <button class="btn-master btn-primary btn-close-modal" id="btn-alert-ok">OK</button>
+    </div>
+  </div>
+
   <script type="module">
     import { auth, db } from '../config.js';
     import { collection, query, where, limit, getDocs, doc, updateDoc, startAfter } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -420,7 +485,10 @@
       tempBase64Img: null,
       lastProdDoc: null,
       hasMoreProd: true,
-      catCache: {} // Store category names for badges
+      catCache: {}, // Store category names for badges
+      isLoadingSearch: false,
+      searchFetchToken: 0,
+      isSavingProd: false
     };
 
     const getProductImage = (prod) => {
@@ -458,30 +526,97 @@
       </div>
     `;
 
-    // --- 1. Routing Engine ---
+    // --- 1. Routing Engine (Promise-Synced Nested Modal Stack + Hardware Back Support) ---
+    let popstateWaiters = [];
+
+    function syncOverlayStates() {
+      const hasSheets = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('bottom-sheet'));
+      document.getElementById('main-overlay').classList.toggle('active', hasSheets);
+
+      const hasDialogs = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('dialog-box'));
+      ui.dialogOverlay.classList.toggle('active', hasDialogs);
+    }
+
     function openModal(modalId) {
       if (navigator.vibrate) navigator.vibrate(10);
       const el = document.getElementById(modalId);
       if(!el) return;
-      if(el.classList.contains('bottom-sheet')) document.getElementById('main-overlay').classList.add('active');
-      if(el.classList.contains('dialog-box')) ui.dialogOverlay.classList.add('active');
-      
+
+      // Prevent duplicate consecutive stack entries for the exact same modal
+      if (STATE.modalStack[STATE.modalStack.length - 1] === modalId) {
+        el.classList.add('active');
+        syncOverlayStates();
+        return;
+      }
+
       el.classList.add('active');
       STATE.modalStack.push(modalId);
-      history.pushState({ modal: modalId }, '');
+      syncOverlayStates();
+      history.pushState({ modal: modalId, depth: STATE.modalStack.length }, '');
     }
 
     function closeModalUI(modalId) {
       const el = document.getElementById(modalId);
       if(el) el.classList.remove('active');
-      
-      const hasSheets = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('bottom-sheet'));
-      if(!hasSheets) document.getElementById('main-overlay').classList.remove('active');
-      
-      const hasDialogs = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('dialog-box'));
-      if(!hasDialogs) ui.dialogOverlay.classList.remove('active');
-
+      syncOverlayStates();
       if(modalId === 'modal-camera') stopCamera();
+    }
+
+    // Safely closes the top modal via history.back() and resolves when popstate completes
+    function closeTopModal() {
+      return new Promise((resolve) => {
+        if (STATE.modalStack.length === 0) {
+          resolve();
+          return;
+        }
+        let settled = false;
+        const done = () => {
+          if (settled) return;
+          settled = true;
+          resolve();
+        };
+        popstateWaiters.push(done);
+        history.back();
+        // Fallback safety in case mobile WebView suppresses popstate while native picker is open
+        setTimeout(() => {
+          if (!settled) {
+            popstateWaiters = popstateWaiters.filter(fn => fn !== done);
+            if (STATE.modalStack.length > 0) {
+              const top = STATE.modalStack.pop();
+              closeModalUI(top);
+            }
+            done();
+          }
+        }, 350);
+      });
+    }
+
+    // Sequentially closes specific modal(s) from the top of the stack without race conditions
+    async function closeModalChain(targetModalIds) {
+      for (const id of targetModalIds) {
+        if (STATE.modalStack[STATE.modalStack.length - 1] === id) {
+          await closeTopModal();
+        } else if (STATE.modalStack.includes(id)) {
+          const idx = STATE.modalStack.lastIndexOf(id);
+          STATE.modalStack.splice(idx, 1);
+          closeModalUI(id);
+        }
+      }
+    }
+
+    // Mobile-Back-Supported HTML Alert Popup (Replaces all browser alert() calls)
+    function showAppAlert(title, message, isWarning = false) {
+      document.getElementById('alert-title').innerText = title || 'Notice';
+      document.getElementById('alert-desc').innerText = message || '';
+      const iconWrap = document.getElementById('alert-icon-wrap');
+      if (isWarning) {
+        iconWrap.style.background = 'rgba(40,116,240,0.12)';
+        iconWrap.style.color = 'var(--primary)';
+      } else {
+        iconWrap.style.background = 'var(--danger-bg)';
+        iconWrap.style.color = 'var(--danger)';
+      }
+      openModal('dialog-alert');
     }
 
     window.addEventListener('popstate', (e) => {
@@ -489,17 +624,32 @@
         const top = STATE.modalStack.pop();
         closeModalUI(top);
       }
+      if (popstateWaiters.length > 0) {
+        const waiter = popstateWaiters.shift();
+        waiter();
+      }
     });
 
     document.querySelectorAll('.btn-close-modal').forEach(btn => {
       btn.addEventListener('click', () => {
         if (navigator.vibrate) navigator.vibrate(10);
-        if (STATE.modalStack.length > 0) history.back();
+        if (STATE.modalStack.length > 0) closeTopModal();
       });
     });
 
-    document.getElementById('main-overlay').addEventListener('click', () => { if (STATE.modalStack.length > 0) history.back(); });
-    ui.dialogOverlay.addEventListener('click', () => { if (STATE.modalStack.length > 0) history.back(); });
+    document.getElementById('main-overlay').addEventListener('click', () => {
+      const top = STATE.modalStack[STATE.modalStack.length - 1];
+      if (top && document.getElementById(top)?.classList.contains('bottom-sheet')) {
+        closeTopModal();
+      }
+    });
+
+    ui.dialogOverlay.addEventListener('click', () => {
+      const top = STATE.modalStack[STATE.modalStack.length - 1];
+      if (top && document.getElementById(top)?.classList.contains('dialog-box')) {
+        closeTopModal();
+      }
+    });
     
     ui.btnBackHome.addEventListener('click', () => {
       if (navigator.vibrate) navigator.vibrate(10);
@@ -553,22 +703,26 @@
       }
     }
 
-    // --- 5. Fetch Products (Global Search) ---
+    // --- 5. Fetch Products (Global Search with Duplicate Rendering Prevention) ---
     async function executeSearch(isNew = true) {
+      if (!isNew && (STATE.isLoadingSearch || !STATE.hasMoreProd || !STATE.lastProdDoc)) return;
+      
+      if (isNew && STATE.searchQuery === '') {
+         ui.feed.innerHTML = '';
+         ui.feed.appendChild(ui.emptyState);
+         ui.clearBtn.style.display = 'none';
+         return;
+      }
+
+      const currentToken = isNew ? ++STATE.searchFetchToken : STATE.searchFetchToken;
+      STATE.isLoadingSearch = true;
+
       if (isNew) {
-        if (STATE.searchQuery === '') {
-           ui.feed.innerHTML = '';
-           ui.feed.appendChild(ui.emptyState);
-           ui.clearBtn.style.display = 'none';
-           return;
-        }
         ui.clearBtn.style.display = 'flex';
         ui.feed.innerHTML = Array(4).fill(SKELETON_PRODUCT).join('');
         STATE.lastProdDoc = null;
         STATE.hasMoreProd = true;
       }
-
-      if (!STATE.hasMoreProd) return;
 
       try {
         const q = isNew 
@@ -576,6 +730,9 @@
             : query(collection(db, "products"), where(`searchKeywords.${STATE.searchQuery}`, "==", true), startAfter(STATE.lastProdDoc), limit(10));
         
         const snap = await getDocs(q);
+        
+        // Ignore stale responses if a newer fetch started or search query was cleared
+        if (currentToken !== STATE.searchFetchToken) return;
         
         if (isNew) ui.feed.innerHTML = '';
         
@@ -589,10 +746,14 @@
         STATE.lastProdDoc = snap.docs[snap.docs.length - 1];
 
         snap.forEach(docSnap => {
+          // Strict DOM deduplication: never render two cards with the same Firestore document ID
+          if (ui.feed.querySelector(`[data-prod-id="${docSnap.id}"]`)) return;
+
           const prod = { id: docSnap.id, ...docSnap.data() };
           
           const card = document.createElement('div');
           card.className = 'prod-card';
+          card.setAttribute('data-prod-id', prod.id);
           
           const priceDisplay = (Number(prod.price) === 0 || !prod.price) ? '' : `₹${Number(prod.price).toLocaleString('en-IN')}`;
           const catName = STATE.catCache[prod.categoryId] || 'Catalog Item';
@@ -628,13 +789,15 @@
         });
 
       } catch (err) {
-        handleFirestoreError(err, ui.feed);
+        if (currentToken === STATE.searchFetchToken) handleFirestoreError(err, ui.feed);
+      } finally {
+        if (currentToken === STATE.searchFetchToken) STATE.isLoadingSearch = false;
       }
     }
 
-    // Infinite Scroll
+    // Infinite Scroll (Locked while fetch is in progress)
     ui.feed.addEventListener('scroll', () => {
-      if (STATE.hasMoreProd && STATE.searchQuery !== '') {
+      if (STATE.hasMoreProd && STATE.searchQuery !== '' && !STATE.isLoadingSearch && STATE.lastProdDoc) {
         if (ui.feed.scrollTop + ui.feed.clientHeight >= ui.feed.scrollHeight - 100) {
           executeSearch(false);
         }
@@ -647,6 +810,8 @@
       STATE.searchQuery = e.target.value.trim().toLowerCase().replace(/[^a-z0-9]/g, '');
       
       if(STATE.searchQuery === '') {
+         // Clear immediately if input is empty
+         STATE.searchFetchToken++; // invalidate any running searches
          ui.clearBtn.style.display = 'none';
          ui.feed.innerHTML = '';
          ui.feed.appendChild(ui.emptyState);
@@ -662,6 +827,7 @@
       if (navigator.vibrate) navigator.vibrate(10);
       ui.searchInput.value = '';
       STATE.searchQuery = '';
+      STATE.searchFetchToken++;
       ui.clearBtn.style.display = 'none';
       ui.feed.innerHTML = '';
       ui.feed.appendChild(ui.emptyState);
@@ -669,7 +835,6 @@
     });
 
     // --- 6. Editing System (From Search) ---
-    // The user also requested edit functionality from within the detail modal.
     document.getElementById('pd-btn-edit').addEventListener('click', () => {
        openProductForm(STATE.editContext);
     });
@@ -699,14 +864,23 @@
     }
 
     document.getElementById('prod-img-picker').addEventListener('click', () => openModal('sheet-source'));
-    document.getElementById('btn-open-gallery').addEventListener('click', () => { document.getElementById('hidden-file').click(); history.back(); });
+    
+    document.getElementById('btn-open-gallery').addEventListener('click', () => { 
+      document.getElementById('hidden-file').click(); 
+      closeModalChain(['sheet-source']); 
+    });
+
+    document.getElementById('btn-cam-fallback-gallery').addEventListener('click', async () => {
+      await closeModalChain(['modal-camera']);
+      document.getElementById('hidden-file').click();
+    });
 
     let videoStream = null;
     const videoEl = document.getElementById('camera-video');
 
-    document.getElementById('btn-open-camera').addEventListener('click', () => {
-      history.back(); 
-      setTimeout(startCamera, 300); 
+    document.getElementById('btn-open-camera').addEventListener('click', async () => {
+      await closeModalChain(['sheet-source']); 
+      startCamera(); 
     });
 
     async function startCamera() {
@@ -727,51 +901,154 @@
       }
     }
 
-    document.getElementById('btn-capture-photo').addEventListener('click', () => {
+    document.getElementById('btn-capture-photo').addEventListener('click', async () => {
       if (navigator.vibrate) navigator.vibrate(20);
       if (!videoStream) return;
       const canvas = document.createElement('canvas');
       canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight;
       canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
       const base64Img = canvas.toDataURL('image/jpeg', 0.9);
-      history.back(); // close camera
-      setTimeout(() => initCropEngine(base64Img), 100); 
+      await closeModalChain(['modal-camera']);
+      initCropEngine(base64Img); 
     });
 
-    document.getElementById('hidden-file').addEventListener('change', (e) => {
+    document.getElementById('hidden-file').addEventListener('change', async (e) => {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = (event) => initCropEngine(event.target.result);
+      reader.onload = async (event) => {
+        if (STATE.modalStack.includes('sheet-source')) {
+          await closeModalChain(['sheet-source']);
+        }
+        initCropEngine(event.target.result);
+      };
       e.target.value = '';
     });
 
-    // Dark Room Square Crop Logic
+    // Dark Room Square Crop Logic (Upgraded with 1:1 Background Layer, Pinch-to-Zoom & Fit/Fill)
     const cropImgTarget = document.getElementById('crop-target-img');
     const cropArea = document.getElementById('crop-area');
     const cropSquare = document.getElementById('crop-square');
+    const cropBgLayer = document.getElementById('crop-bg-layer');
+    const cropZoomSlider = document.getElementById('crop-zoom-slider');
+    const cropZoomBadge = document.getElementById('crop-zoom-badge');
+    const btnCropFit = document.getElementById('btn-crop-fit');
+    const btnCropFill = document.getElementById('btn-crop-fill');
+    const btnCropCenter = document.getElementById('btn-crop-center');
     
     let cropScale = 1, cropX = 0, cropY = 0, startX = 0, startY = 0;
     let isDragging = false, imgOrigW = 0, imgOrigH = 0, squareSize = 300;
+    let fitScale = 1, coverScale = 1, minScale = 0.1, maxScale = 4;
+    let isPinching = false, initialPinchDist = 0, initialPinchScale = 1;
+    let pinchMidX = 0, pinchMidY = 0;
+    let activeBgConfig = { type: 'solid', c1: '#ffffff', c2: '#ffffff' };
+
+    // 1:1 Backdrop Swatch Selector
+    document.querySelectorAll('#crop-swatches .crop-swatch').forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        if (navigator.vibrate) navigator.vibrate(8);
+        document.querySelectorAll('#crop-swatches .crop-swatch').forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+        const type = swatch.getAttribute('data-bg-type');
+        const c1 = swatch.getAttribute('data-bg-c1');
+        const c2 = swatch.getAttribute('data-bg-c2') || c1;
+        activeBgConfig = { type, c1, c2 };
+        if (type === 'gradient') {
+          cropBgLayer.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+        } else {
+          cropBgLayer.style.background = c1;
+        }
+      });
+    });
+
+    function syncZoomUI() {
+      const pct = Math.round((cropScale / fitScale) * 100);
+      cropZoomBadge.innerText = `${pct}%`;
+      const sliderVal = ((cropScale - minScale) / (maxScale - minScale)) * 390 + 10;
+      cropZoomSlider.value = Math.max(10, Math.min(400, sliderVal));
+
+      const eps = Math.max(fitScale * 0.015, 0.002);
+      btnCropFit.classList.toggle('active', Math.abs(cropScale - fitScale) <= eps);
+      btnCropFill.classList.toggle('active', Math.abs(cropScale - coverScale) <= eps);
+    }
+
+    function centerImageAtScale(targetScale, animate = true) {
+      cropScale = Math.max(minScale, Math.min(maxScale, targetScale));
+      const areaRect = cropArea.getBoundingClientRect();
+      const displayW = imgOrigW * cropScale;
+      const displayH = imgOrigH * cropScale;
+      cropX = (areaRect.width - displayW) / 2;
+      cropY = (areaRect.height - displayH) / 2;
+      if (animate) {
+        cropImgTarget.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        setTimeout(() => { cropImgTarget.style.transition = 'none'; }, 240);
+      }
+      updateCropTransform();
+      syncZoomUI();
+    }
+
+    function zoomAroundPoint(newScale, focalX, focalY) {
+      const clampedScale = Math.max(minScale, Math.min(maxScale, newScale));
+      const scaleRatio = clampedScale / cropScale;
+      cropX = focalX - (focalX - cropX) * scaleRatio;
+      cropY = focalY - (focalY - cropY) * scaleRatio;
+      cropScale = clampedScale;
+      updateCropTransform();
+      syncZoomUI();
+    }
+
+    btnCropFit.addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      centerImageAtScale(fitScale, true);
+    });
+
+    btnCropFill.addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      centerImageAtScale(coverScale, true);
+    });
+
+    btnCropCenter.addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      centerImageAtScale(cropScale, true);
+    });
+
+    cropZoomSlider.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      const targetScale = minScale + ((val - 10) / 390) * (maxScale - minScale);
+      const areaRect = cropArea.getBoundingClientRect();
+      zoomAroundPoint(targetScale, areaRect.width / 2, areaRect.height / 2);
+    });
 
     function initCropEngine(base64Data) {
       const tempImg = new Image();
       tempImg.onload = () => {
+        imgOrigW = tempImg.naturalWidth || tempImg.width;
+        imgOrigH = tempImg.naturalHeight || tempImg.height;
+
         cropImgTarget.style.opacity = '0';
         cropImgTarget.style.transition = 'opacity 0.3s ease';
+        cropImgTarget.width = imgOrigW;
+        cropImgTarget.height = imgOrigH;
         cropImgTarget.src = base64Data;
 
-        openModal('modal-crop');
+        const alreadyInCrop = STATE.modalStack.includes('modal-crop');
+        if (!alreadyInCrop) {
+          openModal('modal-crop');
+        }
 
         setTimeout(() => {
-          imgOrigW = tempImg.width;
-          imgOrigH = tempImg.height;
           squareSize = cropSquare.offsetWidth;
 
           const scaleX = squareSize / imgOrigW;
           const scaleY = squareSize / imgOrigH;
-          cropScale = Math.max(scaleX, scaleY); 
+          fitScale = Math.min(scaleX, scaleY);
+          coverScale = Math.max(scaleX, scaleY); 
+          minScale = fitScale * 0.65;
+          maxScale = Math.max(coverScale * 3.5, fitScale * 5);
+
+          const aspectRatio = Math.max(imgOrigW / imgOrigH, imgOrigH / imgOrigW);
+          cropScale = aspectRatio > 1.35 ? fitScale : coverScale;
           
           const displayW = imgOrigW * cropScale;
           const displayH = imgOrigH * cropScale;
@@ -781,8 +1058,9 @@
           cropY = (areaRect.height - displayH) / 2;
           
           updateCropTransform();
+          syncZoomUI();
           cropImgTarget.style.opacity = '1';
-        }, 400); 
+        }, alreadyInCrop ? 60 : 400); 
       };
       tempImg.src = base64Data;
     }
@@ -790,11 +1068,23 @@
     function updateCropTransform() {
       const areaRect = cropArea.getBoundingClientRect();
       const sqRect = cropSquare.getBoundingClientRect();
-      
-      const minX = sqRect.right - areaRect.left - (imgOrigW * cropScale);
-      const maxX = sqRect.left - areaRect.left;
-      const minY = sqRect.bottom - areaRect.top - (imgOrigH * cropScale);
-      const maxY = sqRect.top - areaRect.top;
+      squareSize = sqRect.width || cropSquare.offsetWidth;
+
+      const sqLeft = sqRect.left - areaRect.left;
+      const sqTop = sqRect.top - areaRect.top;
+      const sqRight = sqRect.right - areaRect.left;
+      const sqBottom = sqRect.bottom - areaRect.top;
+
+      const displayW = imgOrigW * cropScale;
+      const displayH = imgOrigH * cropScale;
+
+      const marginX = Math.min(displayW, squareSize) * 0.35;
+      const minX = sqLeft + marginX - displayW;
+      const maxX = sqRight - marginX;
+
+      const marginY = Math.min(displayH, squareSize) * 0.35;
+      const minY = sqTop + marginY - displayH;
+      const maxY = sqBottom - marginY;
       
       if(cropX > maxX) cropX = maxX;
       if(cropX < minX) cropX = minX;
@@ -804,15 +1094,48 @@
       cropImgTarget.style.transform = `translate(${cropX}px, ${cropY}px) scale(${cropScale})`;
     }
 
+    const getTouchDist = (t1, t2) => Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+
     const onStart = (e) => {
+      cropImgTarget.style.transition = 'none';
+      cropArea.classList.add('interacting');
+
+      if (e.touches && e.touches.length === 2) {
+        isDragging = false;
+        isPinching = true;
+        initialPinchDist = getTouchDist(e.touches[0], e.touches[1]);
+        initialPinchScale = cropScale;
+        const areaRect = cropArea.getBoundingClientRect();
+        pinchMidX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - areaRect.left;
+        pinchMidY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - areaRect.top;
+        return;
+      }
+
+      isPinching = false;
       isDragging = true;
-      cropImgTarget.style.transition = 'none'; 
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       startX = clientX - cropX;
       startY = clientY - cropY;
     };
     const onMove = (e) => {
+      if (isPinching && e.touches && e.touches.length === 2) {
+        e.preventDefault();
+        const dist = getTouchDist(e.touches[0], e.touches[1]);
+        if (initialPinchDist > 0) {
+          const newScale = initialPinchScale * (dist / initialPinchDist);
+          const areaRect = cropArea.getBoundingClientRect();
+          const curMidX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - areaRect.left;
+          const curMidY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - areaRect.top;
+          cropX += (curMidX - pinchMidX);
+          cropY += (curMidY - pinchMidY);
+          pinchMidX = curMidX;
+          pinchMidY = curMidY;
+          zoomAroundPoint(newScale, pinchMidX, pinchMidY);
+        }
+        return;
+      }
+
       if(!isDragging) return;
       e.preventDefault();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -821,7 +1144,28 @@
       cropY = clientY - startY;
       updateCropTransform();
     };
-    const onEnd = () => { isDragging = false; };
+    const onEnd = (e) => {
+      if (e && e.touches && e.touches.length === 1) {
+        isPinching = false;
+        isDragging = true;
+        startX = e.touches[0].clientX - cropX;
+        startY = e.touches[0].clientY - cropY;
+        return;
+      }
+      isDragging = false;
+      isPinching = false;
+      cropArea.classList.remove('interacting');
+    };
+
+    // Desktop Mouse-Wheel Zoom Support
+    cropArea.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const areaRect = cropArea.getBoundingClientRect();
+      const focalX = e.clientX - areaRect.left;
+      const focalY = e.clientY - areaRect.top;
+      const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+      zoomAroundPoint(cropScale * zoomFactor, focalX, focalY);
+    }, { passive: false });
     
     cropArea.addEventListener('mousedown', onStart);
     cropArea.addEventListener('touchstart', onStart, {passive: false});
@@ -830,32 +1174,54 @@
     window.addEventListener('mouseup', onEnd);
     window.addEventListener('touchend', onEnd);
 
-    document.getElementById('btn-crop-confirm').addEventListener('click', () => {
+    document.getElementById('btn-crop-confirm').addEventListener('click', async () => {
       if (navigator.vibrate) navigator.vibrate(15);
       const btn = document.getElementById('btn-crop-confirm');
       btn.innerText = 'Processing...'; btn.style.pointerEvents = 'none';
 
       const sqRect = cropSquare.getBoundingClientRect();
       const areaRect = cropArea.getBoundingClientRect();
+      const curSquareSize = sqRect.width || squareSize;
       
       const sqX = sqRect.left - areaRect.left;
       const sqY = sqRect.top - areaRect.top;
       const sourceX = (sqX - cropX) / cropScale;
       const sourceY = (sqY - cropY) / cropScale;
-      const sourceSize = squareSize / cropScale;
+      const sourceSize = curSquareSize / cropScale;
       
       const canvas = document.createElement('canvas');
       canvas.width = 800; canvas.height = 800;
-      canvas.getContext('2d').drawImage(cropImgTarget, sourceX, sourceY, sourceSize, sourceSize, 0, 0, 800, 800);
+      const ctx = canvas.getContext('2d');
+
+      // 1:1 Background Layer
+      if (activeBgConfig.type === 'gradient') {
+        const grad = ctx.createLinearGradient(0, 0, 800, 800);
+        grad.addColorStop(0, activeBgConfig.c1);
+        grad.addColorStop(1, activeBgConfig.c2);
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = activeBgConfig.c1 || '#ffffff';
+      }
+      ctx.fillRect(0, 0, 800, 800);
+
+      const canvasRatio = 800 / curSquareSize;
+      const destX = (cropX - sqX) * canvasRatio;
+      const destY = (cropY - sqY) * canvasRatio;
+      const destW = (imgOrigW * cropScale) * canvasRatio;
+      const destH = (imgOrigH * cropScale) * canvasRatio;
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(cropImgTarget, destX, destY, destW, destH);
       
-      const base64Final = canvas.toDataURL('image/jpeg', 0.85);
+      const base64Final = canvas.toDataURL('image/jpeg', 0.9);
       STATE.tempBase64Img = base64Final;
       
       document.getElementById('prod-img-preview').src = base64Final;
       document.getElementById('prod-img-picker').classList.add('has-image');
 
+      await closeModalChain(['modal-crop']);
       btn.innerText = 'Confirm'; btn.style.pointerEvents = 'auto';
-      history.back(); // close crop
     });
 
     async function uploadToImgBB(base64Data) {
@@ -868,14 +1234,17 @@
     }
 
     document.getElementById('btn-save-prod').addEventListener('click', async (e) => {
-      if (!STATE.editContext) return;
+      if (!STATE.editContext || STATE.isSavingProd) return;
+      
       const name = document.getElementById('prod-name').value.trim();
       const price = Number(document.getElementById('prod-price').value) || 0;
       const brand = document.getElementById('prod-brand').value.trim();
       const code = document.getElementById('prod-code').value.trim();
       const desc = document.getElementById('prod-desc').value.trim();
-      if (!name) return alert("Product name required.");
       
+      if (!name) return showAppAlert("Name Required", "Please enter a product name before saving.", true);
+      
+      STATE.isSavingProd = true;
       const btn = e.target;
       btn.innerText = 'Saving...'; btn.style.pointerEvents = 'none';
 
@@ -892,16 +1261,39 @@
         };
 
         await updateDoc(doc(db, "products", STATE.editContext.id), payload);
-
-        history.back(); // close form
-        if (STATE.modalStack.includes('modal-product-detail')) history.back(); 
+        STATE.editContext = { ...STATE.editContext, ...payload };
         
-        executeSearch(true);
+        // Update detail UI immediately behind the scenes
+        const catName = STATE.catCache[STATE.editContext.categoryId] || 'Catalog Item';
+        document.getElementById('pd-name').innerText = payload.name;
+        document.getElementById('pd-price').innerText = (payload.price === 0 || !payload.price) ? '' : `₹${Number(payload.price).toLocaleString('en-IN')}`;
+        
+        if (payload.brand) { document.getElementById('pd-brand').innerText = payload.brand; document.getElementById('pd-brand').style.display = 'block'; } else { document.getElementById('pd-brand').style.display = 'none'; }
+        if (payload.code) { document.getElementById('pd-code').innerText = payload.code; document.getElementById('pd-code').style.display = 'block'; } else { document.getElementById('pd-code').style.display = 'none'; }
+        if (payload.description) { document.getElementById('pd-desc').innerText = payload.description; document.getElementById('pd-desc').style.display = 'block'; } else { document.getElementById('pd-desc').style.display = 'none'; }
+        
+        const imgEl = document.getElementById('pd-img');
+        const imgWrap = document.getElementById('pd-img-wrap');
+        if (finalImageUrl) {
+          imgEl.src = finalImageUrl;
+          imgEl.style.display = 'block';
+          imgWrap.style.cursor = 'zoom-in';
+          imgWrap.onclick = () => { document.getElementById('zoom-img').src = finalImageUrl; openModal('viewer-zoom'); };
+        } else {
+          imgEl.style.display = 'none';
+          imgWrap.style.cursor = 'default';
+          imgWrap.onclick = null;
+        }
+
+        await closeModalChain(['sheet-product']); 
+        executeSearch(true); // Refetch list to show updated card
       } catch (err) {
         console.error(err);
-        alert("Failed to save product.");
+        showAppAlert("Save Failed", "Could not save the product. Please check your internet connection.");
+      } finally {
+        btn.innerText = 'Save Product'; btn.style.pointerEvents = 'auto';
+        STATE.isSavingProd = false;
       }
-      btn.innerText = 'Save Product'; btn.style.pointerEvents = 'auto';
     });
 
     // --- 7. Product Detail & Zoom ---
@@ -958,7 +1350,6 @@
         imgWrap.onclick = null;
       }
 
-      // Finally, open the modal via the hardware back-button engine
       openModal('modal-product-detail');
     }
 
