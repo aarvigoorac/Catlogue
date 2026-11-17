@@ -256,9 +256,9 @@
     .preview-big-body { padding: 10px; text-align: center; display: flex; flex-direction: column; gap: 4px; flex: 1; }
     .preview-big-qty { background: #4f46e5; color: #fff; font-weight: 900; font-size: 13px; padding: 8px; text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* Layout 3: Right-Image Lookbook */
-    .preview-row.layout-right-row { flex-direction: row; text-align: right; border-left: 5px solid #991b1b; }
-    .preview-row.layout-right-row .preview-img { width: 88px; height: 88px; border-radius: 12px; }
+    /* Layout 3: Vertical Stack 4 */
+    .preview-list-body.layout-single-col { display: flex; flex-direction: column; gap: 12px; }
+    .preview-single-img { width: 100%; height: 120px; object-fit: contain; background: #f3f4f6; border-bottom: 1px solid #e5e7eb; padding: 8px; cursor: zoom-in; }
 
     /* Layout 4: Wholesale Dual-Column */
     .preview-list-body.layout-dual-col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
@@ -447,12 +447,12 @@
           <div class="tpl-desc">Huge 2x2 product photos with centered title & bottom Qty bar</div>
         </div>
 
-        <div class="tpl-option-card" data-tpl="rightlookbook">
+        <div class="tpl-option-card" data-tpl="singlecolumn4">
           <div class="tpl-swatch" style="background: linear-gradient(135deg, #7f1d1d, #dc2626);">
-            <span>RIGHT IMG</span><span>5 / PG</span>
+            <span>1-COLUMN</span><span>4 / PG</span>
           </div>
-          <div class="tpl-name">3. Right Lookbook</div>
-          <div class="tpl-desc">Large right-aligned image, left Qty badge & right-aligned text</div>
+          <div class="tpl-name">3. Vertical Stack 4</div>
+          <div class="tpl-desc">Full-width cards with centered photo, details & bottom Qty bar</div>
         </div>
 
         <div class="tpl-option-card" data-tpl="wholesale">
@@ -599,10 +599,10 @@
         badgeBg: '#4f46e5',
         badgeText: '#ffffff'
       },
-      rightlookbook: {
-        name: 'Right Lookbook',
-        layout: 'right-image',
-        itemsPerPage: 5,
+      singlecolumn4: {
+        name: 'Vertical Stack 4',
+        layout: 'single-col-grid',
+        itemsPerPage: 4,
         headerBg: '#7f1d1d',
         accent: '#dc2626',
         rowBgEven: '#fef2f2',
@@ -1297,6 +1297,8 @@
         ui.previewListBody.classList.add('layout-big-grid');
       } else if (tpl.layout === 'dual-column') {
         ui.previewListBody.classList.add('layout-dual-col');
+      } else if (tpl.layout === 'single-col-grid') {
+        ui.previewListBody.classList.add('layout-single-col');
       }
 
       STATE.selectedItems.forEach((item, idx) => {
@@ -1313,22 +1315,16 @@
             </div>
             <div class="preview-big-qty" style="background:${tpl.accent};">NEEDED QTY: ${item.qty || 1}</div>
           `;
-        } else if (tpl.layout === 'right-image') {
-          el.className = 'preview-row layout-right-row';
-          el.style.borderColor = tpl.borderColor;
-          el.style.borderLeftColor = tpl.accent;
-          if (idx % 2 === 1) el.style.background = tpl.rowBgEven;
+        } else if (tpl.layout === 'single-col-grid') {
+          el.className = 'preview-big-card';
           el.innerHTML = `
-            <div class="preview-qty-box" style="background:${tpl.badgeBg}; border-color:${tpl.borderColor};">
-              <span class="preview-qty-label" style="color:${tpl.badgeText};">NEEDED</span>
-              <span class="preview-qty-num" style="color:${tpl.badgeText};">${item.qty || 1}</span>
-            </div>
-            <div class="preview-info" style="text-align:right; align-items:flex-end;">
+            ${item.imageUrl ? `<img class="preview-single-img" src="${item.imageUrl}" onerror="this.style.display='none'">` : `<div class="preview-single-img" style="display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#6b7280;">NO IMG</div>`}
+            <div class="preview-big-body">
               ${item.brand ? `<div class="preview-prod-brand" style="color:${tpl.accent};">${item.brand}</div>` : ''}
               <div class="preview-prod-name">${item.name}</div>
               ${item.description ? `<div class="preview-prod-desc">${item.description}</div>` : ''}
             </div>
-            ${item.imageUrl ? `<img class="preview-img" src="${item.imageUrl}" onerror="this.style.display='none'">` : `<div class="preview-img" style="display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#6b7280;">NO IMG</div>`}
+            <div class="preview-big-qty" style="background:${tpl.accent};">NEEDED QTY: ${item.qty || 1}</div>
           `;
         } else if (tpl.layout === 'dual-column') {
           el.className = 'preview-compact-card';
@@ -1478,7 +1474,7 @@
 
       const dateStr = new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
 
-      if (tpl.layout === 'big-grid' || tpl.layout === 'jumbo-hero') {
+      if (tpl.layout === 'big-grid' || tpl.layout === 'jumbo-hero' || tpl.layout === 'single-col-grid') {
         // Centered Luxury Header Alignment
         ctx.textAlign = 'center';
         ctx.fillStyle = '#ffffff';
@@ -1568,76 +1564,64 @@
           ctx.fillText(`NEEDED QTY: ${item.qty || 1}`, x + cardW / 2, y + cardH - 24);
           ctx.textAlign = 'left';
         }
-      } else if (tpl.layout === 'right-image') {
-        // TEMPLATE 3: Right-Aligned Lookbook (5 items/page, 215x215 image on RIGHT, Qty on LEFT)
-        let yCursor = 225;
-        const rowH = 280;
+      } else if (tpl.layout === 'single-col-grid') {
+        // TEMPLATE 3: Vertical Stack (4 items/page, 1 column)
+        let yCursor = 215;
+        const cardH = 345;
+        const gapY = 30;
+        
         for (let i = 0; i < pageItems.length; i++) {
           const item = pageItems[i];
-          ctx.fillStyle = i % 2 === 0 ? '#ffffff' : tpl.rowBgEven;
-          ctx.fillRect(padX, yCursor, contentW, rowH - 16);
+          
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(padX, yCursor, contentW, cardH);
           ctx.strokeStyle = tpl.borderColor;
-          ctx.lineWidth = 2.5;
-          ctx.strokeRect(padX, yCursor, contentW, rowH - 16);
-
-          ctx.fillStyle = tpl.accent;
-          ctx.fillRect(padX, yCursor, 12, rowH - 16);
-
-          // Left Needed Qty Box
-          const qtyX = padX + 34;
-          const qtyY = yCursor + 48;
-          const qtyW = 160;
-          const qtyH = 165;
-          ctx.fillStyle = tpl.badgeBg;
-          ctx.fillRect(qtyX, qtyY, qtyW, qtyH);
-          ctx.strokeStyle = tpl.accent;
           ctx.lineWidth = 3;
-          ctx.strokeRect(qtyX, qtyY, qtyW, qtyH);
+          ctx.strokeRect(padX, yCursor, contentW, cardH);
 
-          ctx.textAlign = 'center';
-          ctx.fillStyle = tpl.badgeText;
-          ctx.font = '800 20px system-ui, sans-serif';
-          ctx.fillText('NEEDED QTY', qtyX + qtyW / 2, qtyY + 52);
-          ctx.font = '900 52px system-ui, sans-serif';
-          ctx.fillText(String(item.qty || 1), qtyX + qtyW / 2, qtyY + 125);
-
-          // Large Right-Side Image (215x215)
-          const imgSize = 215;
-          const imgX = padX + contentW - imgSize - 24;
-          const imgY = yCursor + 24;
+          // Centered Square Image (170x170)
+          const imgSize = 170;
+          const imgX = padX + (contentW - imgSize) / 2;
+          const imgY = yCursor + 16;
           await drawImgOrPlaceholder(ctx, item.imageUrl, imgX, imgY, imgSize, tpl.borderColor);
 
-          // Right-Aligned Details in Center
-          const textRightX = imgX - 32;
-          const maxTextW = contentW - imgSize - qtyW - 120;
-          ctx.textAlign = 'right';
-          let textY = yCursor + 65;
-
+          // Centered Details
+          ctx.textAlign = 'center';
+          let textY = imgY + imgSize + 28;
+          
           if (item.brand) {
             ctx.fillStyle = tpl.accent;
-            ctx.font = '800 22px system-ui, sans-serif';
-            ctx.fillText(String(item.brand).toUpperCase(), textRightX, textY);
-            textY += 38;
+            ctx.font = '800 18px system-ui, sans-serif';
+            ctx.fillText(String(item.brand).toUpperCase(), padX + contentW / 2, textY);
+            textY += 26;
           }
+          
           ctx.fillStyle = '#111827';
-          ctx.font = '900 30px system-ui, sans-serif';
-          const nameLines = wrapCanvasText(ctx, item.name || 'Product', maxTextW, 2);
-          nameLines.forEach(l => {
-            ctx.fillText(l, textRightX, textY);
-            textY += 36;
-          });
+          ctx.font = '800 24px system-ui, sans-serif';
+          const nameLines = wrapCanvasText(ctx, item.name || 'Product', contentW - 60, 1);
+          if (nameLines[0]) ctx.fillText(nameLines[0], padX + contentW / 2, textY);
+          textY += 26;
 
           if (item.description) {
             ctx.fillStyle = '#4b5563';
-            ctx.font = '500 22px system-ui, sans-serif';
-            const descLines = wrapCanvasText(ctx, item.description, maxTextW, 2);
-            descLines.forEach(l => {
-              ctx.fillText(l, textRightX, textY);
-              textY += 28;
-            });
+            ctx.font = '500 18px system-ui, sans-serif';
+            const descLines = wrapCanvasText(ctx, item.description, contentW - 60, 1);
+            if (descLines[0]) ctx.fillText(descLines[0], padX + contentW / 2, textY);
           }
+
+          // Full-Width Bottom Bar
+          const barH = 55;
+          const barY = yCursor + cardH - barH;
+          
+          ctx.fillStyle = tpl.accent;
+          ctx.fillRect(padX, barY, contentW, barH);
+          
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '900 24px system-ui, sans-serif';
+          ctx.fillText(`NEEDED QTY: ${item.qty || 1}`, padX + contentW / 2, barY + 37);
           ctx.textAlign = 'left';
-          yCursor += rowH;
+
+          yCursor += cardH + gapY;
         }
       } else if (tpl.layout === 'dual-column') {
         // TEMPLATE 4: Wholesale 2-Column (12 items/page, 2x6 compact grid)
@@ -1820,7 +1804,7 @@
           yCursor += rowH;
         }
       } else {
-        // TEMPLATE 1: Royal Executive (8 items/page, left 130x130 image)
+        // Default Layout 1: Royal Executive (Left List)
         let yCursor = 225;
         const rowHeight = 175;
         for (let i = 0; i < pageItems.length; i++) {
