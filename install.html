@@ -10,6 +10,8 @@
 
   <!-- Real 3D Engine (Three.js) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- GLTFLoader included for future external model support -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 
   <style>
     :root {
@@ -199,6 +201,9 @@
       margin-bottom: 24px;
       line-height: 1.5;
     }
+    
+    .spinning { animation: spin 2s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
@@ -261,112 +266,159 @@
         <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
       </div>
       <div class="app-title">App Installed</div>
-      <div class="app-desc">Aarvi Stores is successfully installed on your device. You can now access it from your home screen.</div>
-      <button class="btn-master btn-success" id="btn-open-app">
-        Open Application
-      </button>
+      <div class="app-desc">Aarvi Stores is successfully installed on your device. You can now access it securely from your home screen.</div>
+      <!-- Open button removed as requested -->
     </div>
 
   </div>
 
-  <style>
-    .spinning { animation: spin 2s linear infinite; }
-    @keyframes spin { 100% { transform: rotate(360deg); } }
-  </style>
-
   <script>
     // ==========================================
-    // 1. THREE.JS 3D SUPERMARKET ENGINE
+    // 1. HIGHLY DETAILED THREE.JS SUPERMARKET ENGINE
     // ==========================================
     const canvas = document.getElementById('webgl-canvas');
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     
     const scene = new THREE.Scene();
-    scene.background = new THREE.Color(0x0f172a); // Match CSS --bg-dark
-    scene.fog = new THREE.FogExp2(0x0f172a, 0.025); // Fade to dark in distance
+    scene.background = new THREE.Color(0x0f172a); 
+    scene.fog = new THREE.FogExp2(0x0f172a, 0.018); 
 
     const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    scene.add(camera);
     
-    // Starting camera position (Entrance of the aisle)
-    const START_Z = 10;
-    const END_Z = -120; // 45-second deep journey down the aisle
+    // Starting camera position
+    const START_Z = 15;
+    const END_Z = -300; 
     camera.position.set(0, 3, START_Z);
 
-    // Lights
+    // Advanced Lighting
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    dirLight.position.set(10, 20, 10);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    dirLight.position.set(20, 40, 20);
+    dirLight.castShadow = true;
     scene.add(dirLight);
 
-    // Procedural Supermarket Generation (No external GLB required, loads instantly)
-    function createProceduralAisle() {
-      const aisleGroup = new THREE.Group();
+    const blueGlow = new THREE.PointLight(0x2874f0, 1, 50);
+    blueGlow.position.set(0, 10, -50);
+    scene.add(blueGlow);
 
-      // Floor
-      const floorGeo = new THREE.PlaneGeometry(50, 300);
-      const floorMat = new THREE.MeshStandardMaterial({ 
-        color: 0x1e293b, 
-        roughness: 0.2, 
-        metalness: 0.8 
-      });
-      const floor = new THREE.Mesh(floorGeo, floorMat);
-      floor.rotation.x = -Math.PI / 2;
-      floor.position.z = -100;
-      aisleGroup.add(floor);
+    // ----------------------------------------------------
+    // A. 3D Shopping Cart (Attached to Camera)
+    // ----------------------------------------------------
+    const cartGroup = new THREE.Group();
+    
+    // Cart Basket (Wireframe for a realistic metallic look)
+    const basketGeo = new THREE.BoxGeometry(2.5, 1.8, 3);
+    const basketMat = new THREE.MeshStandardMaterial({ 
+      color: 0xcccccc, 
+      metalness: 0.9, 
+      roughness: 0.2, 
+      wireframe: true 
+    });
+    const basket = new THREE.Mesh(basketGeo, basketMat);
+    basket.position.set(0, 0, 0);
+    cartGroup.add(basket);
 
-      // Shelves Generator
-      const shelfGeo = new THREE.BoxGeometry(3, 8, 280);
-      const shelfMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 });
-      
-      const leftShelf = new THREE.Mesh(shelfGeo, shelfMat);
-      leftShelf.position.set(-6, 4, -100);
-      aisleGroup.add(leftShelf);
+    // Cart Handle
+    const handleGeo = new THREE.CylinderGeometry(0.08, 0.08, 2.5, 16);
+    const handleMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.8 });
+    const handle = new THREE.Mesh(handleGeo, handleMat);
+    handle.rotation.z = Math.PI / 2;
+    handle.position.set(0, 0.9, 1.6);
+    cartGroup.add(handle);
 
-      const rightShelf = new THREE.Mesh(shelfGeo, shelfMat);
-      rightShelf.position.set(6, 4, -100);
-      aisleGroup.add(rightShelf);
+    // Position cart slightly below and in front of the camera viewport
+    cartGroup.position.set(0, -2, -3.5);
+    camera.add(cartGroup);
 
-      // Add colorful "products" to shelves
-      const colors = [0x2874f0, 0x10b981, 0xf59e0b, 0xef4444, 0x8b5cf6, 0xffffff];
-      const prodGeo = new THREE.BoxGeometry(0.8, 1.2, 0.8);
-      
-      for (let z = 5; z > -250; z -= 2) {
-        for (let y = 1; y < 8; y += 2) {
-          // Left products
-          if (Math.random() > 0.3) {
-            const mat = new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.4 });
-            const p = new THREE.Mesh(prodGeo, mat);
-            p.position.set(-4.5, y, z);
-            aisleGroup.add(p);
-          }
-          // Right products
-          if (Math.random() > 0.3) {
-            const mat = new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.4 });
-            const p = new THREE.Mesh(prodGeo, mat);
-            p.position.set(4.5, y, z);
-            aisleGroup.add(p);
-          }
+    // ----------------------------------------------------
+    // B. High-Performance Procedural Aisle (InstancedMesh)
+    // ----------------------------------------------------
+    const aisleGroup = new THREE.Group();
+
+    // Glossy Tiled Floor
+    const floorGeo = new THREE.PlaneGeometry(100, 800);
+    const floorMat = new THREE.MeshStandardMaterial({ 
+      color: 0x1e293b, 
+      roughness: 0.1, 
+      metalness: 0.5 
+    });
+    const floor = new THREE.Mesh(floorGeo, floorMat);
+    floor.rotation.x = -Math.PI / 2;
+    floor.position.z = -350;
+    floor.receiveShadow = true;
+    aisleGroup.add(floor);
+
+    // Endless Aisle Shelves
+    const shelfGeo = new THREE.BoxGeometry(3, 10, 800);
+    const shelfMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.6, metalness: 0.3 });
+    
+    const leftShelf = new THREE.Mesh(shelfGeo, shelfMat);
+    leftShelf.position.set(-6.5, 5, -350);
+    leftShelf.receiveShadow = true;
+    aisleGroup.add(leftShelf);
+
+    const rightShelf = new THREE.Mesh(shelfGeo, shelfMat);
+    rightShelf.position.set(6.5, 5, -350);
+    rightShelf.receiveShadow = true;
+    aisleGroup.add(rightShelf);
+
+    // Thousands of Detailed Products using InstancedMesh for 60FPS Performance
+    const productCount = 6000;
+    const prodGeo = new THREE.BoxGeometry(0.7, 1.2, 0.7);
+    const prodMat = new THREE.MeshStandardMaterial({ roughness: 0.3, metalness: 0.2 });
+    const instancedProducts = new THREE.InstancedMesh(prodGeo, prodMat, productCount);
+    
+    const dummy = new THREE.Object3D();
+    const colors = [
+      new THREE.Color(0x2874f0), new THREE.Color(0x10b981), 
+      new THREE.Color(0xf59e0b), new THREE.Color(0xef4444), 
+      new THREE.Color(0x8b5cf6), new THREE.Color(0xe2e8f0)
+    ];
+
+    let instanceIdx = 0;
+    for (let z = 10; z > -380; z -= 1.5) {
+      for (let y = 1.5; y < 9; y += 2.2) {
+        if (instanceIdx >= productCount) break;
+        
+        // Left Shelf Products
+        if (Math.random() > 0.25) {
+          dummy.position.set(-5, y, z + (Math.random() * 0.2));
+          dummy.rotation.y = (Math.random() - 0.5) * 0.2;
+          dummy.updateMatrix();
+          instancedProducts.setMatrixAt(instanceIdx, dummy.matrix);
+          instancedProducts.setColorAt(instanceIdx, colors[Math.floor(Math.random() * colors.length)]);
+          instanceIdx++;
+        }
+        if (instanceIdx >= productCount) break;
+
+        // Right Shelf Products
+        if (Math.random() > 0.25) {
+          dummy.position.set(5, y, z + (Math.random() * 0.2));
+          dummy.rotation.y = (Math.random() - 0.5) * 0.2;
+          dummy.updateMatrix();
+          instancedProducts.setMatrixAt(instanceIdx, dummy.matrix);
+          instancedProducts.setColorAt(instanceIdx, colors[Math.floor(Math.random() * colors.length)]);
+          instanceIdx++;
         }
       }
-
-      // Neon Accent Strips along the aisle
-      const neonGeo = new THREE.BoxGeometry(0.1, 0.1, 280);
-      const neonMat = new THREE.MeshBasicMaterial({ color: 0x2874f0 });
-      const leftNeon = new THREE.Mesh(neonGeo, neonMat);
-      leftNeon.position.set(-4.4, 8.1, -100);
-      const rightNeon = new THREE.Mesh(neonGeo, neonMat);
-      rightNeon.position.set(4.4, 8.1, -100);
-      aisleGroup.add(leftNeon, rightNeon);
-
-      return aisleGroup;
     }
+    aisleGroup.add(instancedProducts);
 
-    const supermarket = createProceduralAisle();
-    scene.add(supermarket);
+    // Ceiling Neon Strip Lights
+    const neonGeo = new THREE.BoxGeometry(0.2, 0.1, 800);
+    const neonMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const ceilingLight = new THREE.Mesh(neonGeo, neonMat);
+    ceilingLight.position.set(0, 12, -350);
+    aisleGroup.add(ceilingLight);
+
+    scene.add(aisleGroup);
 
     // Dynamic Parallax Variables
     let targetX = 0;
@@ -394,22 +446,28 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // Main 3D Render Loop
+    // Main 3D Render Loop with Automatic Idle & Deep Drive Animations
     function animate3D() {
       requestAnimationFrame(animate3D);
+
+      const time = Date.now() * 0.001;
 
       // Smooth Parallax Camera Look
       camera.position.x += (targetX * 2 - camera.position.x) * 0.05;
       camera.position.y += ((3 + targetY * 1) - camera.position.y) * 0.05;
       camera.lookAt(targetX * 5, 3, -100);
 
-      // If installing, move the camera deep into the aisle based on progress[span_0](start_span)[span_0](end_span)
       if (isAnimatingInstall) {
+        // High-speed drive deep into the aisle tracking the 45s progress
         const targetZ = START_Z + (END_Z - START_Z) * currentInstallProgress;
-        camera.position.z += (targetZ - camera.position.z) * 0.05; // Smooth interpolation
+        camera.position.z += (targetZ - camera.position.z) * 0.05; 
+        // Vigorous cart rattle
+        cartGroup.position.y = -2 + Math.sin(time * 25) * 0.08;
       } else {
-        // Subtle floating when idle
-        camera.position.z = START_Z + Math.sin(Date.now() * 0.001) * 0.5;
+        // Automatic Idle Animation: Slowly drifting forward endlessly
+        camera.position.z = START_Z - (time * 1.5) % 150; 
+        // Gentle cart bobbing
+        cartGroup.position.y = -2 + Math.sin(time * 5) * 0.04;
       }
 
       renderer.render(scene, camera);
@@ -418,7 +476,7 @@
 
 
     // ==========================================
-    // 2. STRICT UI STATE & PWA INSTALL LOGIC[span_1](start_span)[span_1](end_span)
+    // 2. STRICT UI STATE & PWA INSTALL LOGIC
     // ==========================================
     
     // Service Worker Registration
@@ -450,7 +508,7 @@
     const isGenuineChrome = (isChrome || isIOSChrome) && !/Edg|OPR|Brave|SamsungBrowser/.test(navigator.userAgent);
 
     let deferredPrompt = null;
-    const INSTALL_DURATION_MS = 45000; // Exact 45 seconds[span_2](start_span)[span_2](end_span)
+    const INSTALL_DURATION_MS = 45000; // Exact 45 seconds
 
     // Determine Initial State
     if (isStandalone || isLocalStorageMarkedInstalled) {
@@ -489,13 +547,7 @@
       }, 2000);
     });
 
-    // Open App Action (When already installed)
-    document.getElementById('btn-open-app').addEventListener('click', () => {
-      if (navigator.vibrate) navigator.vibrate(10);
-      window.location.href = "home.html";
-    });
-
-    // 45-Second Install Animation Flow[span_3](start_span)[span_3](end_span)
+    // 45-Second Install Animation Flow
     document.getElementById('btn-install-app').addEventListener('click', async () => {
       if (isStandalone || isLocalStorageMarkedInstalled) return;
       if (navigator.vibrate) navigator.vibrate(30);
