@@ -3,37 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <meta name="theme-color" content="#f1f3f6" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#121212" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#0f172a">
   <title>Download - Aarvi Stores</title>
   
   <link rel="manifest" href="./manifest.json">
 
+  <!-- Real 3D Engine (Three.js) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
   <style>
     :root {
-      --bg-color: #f1f3f6;
-      --surface-color: #ffffff;
-      --surface-rgb: 255, 255, 255;
-      --text-main: #000000;
-      --text-sub: #666666;
-      --border: #e0e0e0;
       --primary: #2874f0;
-      --primary-rgb: 40, 116, 240;
-      --success: #137333;
-      --success-bg: #e6f4ea;
-    }
-
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --bg-color: #0f172a;
-        --surface-color: #1e293b;
-        --surface-rgb: 30, 41, 59;
-        --text-main: #f8fafc;
-        --text-sub: #94a3b8;
-        --border: #334155;
-        --success: #4ade80;
-        --success-bg: #064e3b;
-      }
+      --success: #10b981;
+      --bg-dark: #0f172a;
+      --glass-bg: rgba(30, 41, 59, 0.75);
+      --glass-border: rgba(255, 255, 255, 0.15);
+      --text-main: #f8fafc;
+      --text-sub: #94a3b8;
     }
 
     * {
@@ -42,163 +28,142 @@
       padding: 0;
       font-family: system-ui, -apple-system, sans-serif;
       -webkit-tap-highlight-color: transparent;
-      -webkit-touch-callout: none !important;
       user-select: none !important;
+      -webkit-user-select: none;
     }
 
-    html, body {
-      background-color: var(--bg-color);
-      color: var(--text-main);
-      height: 100vh;
-      height: 100dvh;
+    body, html {
       width: 100vw;
+      height: 100vh;
       overflow: hidden;
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+    }
+
+    /* 3D Canvas Background */
+    #webgl-canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 1;
+      outline: none;
+    }
+
+    /* UI Overlay Layer */
+    .ui-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
+      pointer-events: none; /* Let clicks pass to 3D canvas if outside card */
+      padding: 24px;
     }
 
-    /* 3D Perspective Scene Container */
-    .scene-container {
-      perspective: 1000px;
+    /* Glassmorphism UI Card */
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 32px;
+      padding: 40px 32px;
       width: 100%;
-      max-width: 420px;
-      padding: 20px;
-      display: flex;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+      pointer-events: auto; /* Re-enable clicks on the card */
+      display: none; /* Toggled via JS */
       flex-direction: column;
       align-items: center;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: floatUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    /* 3D Floating Card */
-    .card-3d {
-      background: var(--surface-color);
-      border: 1px solid var(--border);
-      border-radius: 32px;
-      padding: 36px 28px;
-      width: 100%;
-      text-align: center;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25),
-                  0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-      transform-style: preserve-3d;
-      transform: rotateX(4deg) rotateY(-4deg);
-      transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      position: relative;
-      overflow: hidden;
+    .glass-card.active {
+      display: flex;
     }
 
-    .card-3d:hover {
-      transform: rotateX(0deg) rotateY(0deg) translateY(-4px);
+    @keyframes floatUp {
+      to { transform: translateY(0); opacity: 1; }
     }
 
-    /* App Icon 3D Floating Effect */
-    .app-icon-wrap {
-      width: 96px;
-      height: 96px;
-      margin: 0 auto 20px auto;
-      border-radius: 24px;
+    /* App Icon */
+    .app-icon {
+      width: 88px;
+      height: 88px;
+      border-radius: 22px;
       background: linear-gradient(135deg, #2874f0, #1d4ed8);
       display: flex;
       align-items: center;
       justify-content: center;
       box-shadow: 0 12px 24px rgba(40, 116, 240, 0.35);
-      transform: translateZ(30px);
-      position: relative;
+      margin-bottom: 24px;
+      border: 1px solid rgba(255,255,255,0.2);
     }
-
-    .app-icon-wrap img {
-      width: 64px;
-      height: 64px;
-      object-fit: contain;
-      border-radius: 14px;
-    }
+    .app-icon svg { width: 44px; height: 44px; color: #fff; }
 
     .app-title {
-      font-size: 24px;
+      font-size: 26px;
       font-weight: 900;
-      color: var(--text-main);
       margin-bottom: 6px;
       letter-spacing: -0.5px;
-      transform: translateZ(20px);
-    }
-
-    .app-subtitle {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--primary);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 16px;
-      transform: translateZ(15px);
     }
 
     .app-desc {
-      font-size: 14px;
+      font-size: 15px;
       color: var(--text-sub);
       line-height: 1.5;
-      margin-bottom: 28px;
-      transform: translateZ(10px);
+      margin-bottom: 32px;
     }
 
-    /* Action Buttons & States */
-    .action-area {
-      width: 100%;
-      transform: translateZ(25px);
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .btn-download {
+    /* Buttons */
+    .btn-master {
       width: 100%;
       padding: 16px;
       border-radius: 16px;
-      background: var(--primary);
-      color: #ffffff;
       border: none;
       font-size: 16px;
       font-weight: 800;
       cursor: pointer;
-      box-shadow: 0 10px 25px rgba(40, 116, 240, 0.4);
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 10px;
-      transition: transform 0.15s, background 0.2s;
+      transition: all 0.2s;
+    }
+    .btn-master:active { transform: scale(0.96); }
+    
+    .btn-primary {
+      background: var(--primary);
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(40, 116, 240, 0.4);
+    }
+    .btn-secondary {
+      background: rgba(255,255,255,0.1);
+      color: #ffffff;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .btn-success {
+      background: var(--success);
+      color: #ffffff;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
     }
 
-    .btn-download:active {
-      transform: scale(0.96);
-    }
-
-    .btn-download svg {
-      width: 20px;
-      height: 20px;
-      stroke: currentColor;
-      stroke-width: 2.5;
-      fill: none;
-    }
-
-    .btn-installed {
-      background: var(--success-bg);
-      color: var(--success);
-      box-shadow: none;
-      cursor: default;
-      pointer-events: none;
-    }
-
-    /* 45-Second Progress Bar Container */
-    .progress-box {
-      display: none;
-      flex-direction: column;
-      gap: 10px;
+    /* 45-Second Progress UI */
+    .progress-wrap {
       width: 100%;
-    }
-
-    .progress-box.active {
       display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
-
     .progress-meta {
       display: flex;
       justify-content: space-between;
@@ -206,142 +171,335 @@
       font-weight: 800;
       color: var(--text-sub);
     }
-
     .progress-track {
       width: 100%;
-      height: 10px;
-      background: var(--bg-color);
+      height: 8px;
+      background: rgba(0,0,0,0.3);
       border-radius: 50px;
       overflow: hidden;
-      border: 1px solid var(--border);
+      border: 1px solid rgba(255,255,255,0.1);
     }
-
     .progress-fill {
       height: 100%;
       width: 0%;
-      background: var(--primary);
-      transition: width 0.1s linear;
+      background: linear-gradient(90deg, #2874f0, #60a5fa);
       border-radius: 50px;
+      box-shadow: 0 0 10px rgba(40, 116, 240, 0.8);
     }
 
-    /* Browser Warning Banner */
-    .browser-notice {
-      margin-top: 16px;
-      font-size: 12px;
-      font-weight: 700;
-      color: var(--text-sub);
-      display: none;
-    }
-    .browser-notice.show {
-      display: block;
+    /* Warning Block */
+    .warning-box {
+      background: rgba(220, 38, 38, 0.15);
+      border: 1px solid rgba(220, 38, 38, 0.3);
+      padding: 14px;
+      border-radius: 12px;
+      color: #fca5a5;
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
 
-  <div class="scene-container">
-    <div class="card-3d" id="card-3d">
-      
-      <div class="app-icon-wrap">
-        <img src="images/icon.png" alt="Aarvi Logo" onerror="this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%23ffffff\' stroke-width=\'2\'><path d=\'M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\'></path></svg>'">
+  <!-- Background 3D Engine Canvas -->
+  <canvas id="webgl-canvas"></canvas>
+
+  <div class="ui-layer">
+    
+    <!-- State 1: Unsupported Browser (Non-Chrome) -->
+    <div class="glass-card" id="state-unsupported">
+      <div class="app-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
       </div>
-
-      <div class="app-title">Aarvi Superstores</div>
-      <div class="app-subtitle">Catalog Maker App</div>
-      <div class="app-desc">Manage inventories, track digital collections, and export clean PDF needed lists instantly.</div>
-
-      <div class="action-area" id="action-area">
-        
-        <!-- Default Install Button -->
-        <button class="btn-download" id="btn-install">
-          <svg viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3"/></svg>
-          <span id="install-btn-text">Install App</span>
-        </button>
-
-        <!-- 45-Sec Installing Progress UI -->
-        <div class="progress-box" id="progress-box">
-          <div class="progress-meta">
-            <span id="progress-status-text">Installing...</span>
-            <span id="progress-pct">0%</span>
-          </div>
-          <div class="progress-track">
-            <div class="progress-fill" id="progress-fill"></div>
-          </div>
-        </div>
-
-        <div class="browser-notice" id="browser-notice">
-          For the best experience, please open this page in Google Chrome.
-        </div>
+      <div class="app-title">Chrome Required</div>
+      <div class="warning-box">
+        Apple Safari and other in-app browsers do not fully support progressive web app installation. Please open this link directly in Google Chrome.
       </div>
-
+      <button class="btn-master btn-secondary" id="btn-copy-link">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        Copy Link
+      </button>
     </div>
+
+    <!-- State 2: Ready to Install -->
+    <div class="glass-card" id="state-install">
+      <div class="app-icon">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      </div>
+      <div class="app-title">Aarvi Superstores</div>
+      <div class="app-desc">Install the full 3D Catalog Manager to your device. Seamless offline caching, PDF generation, and inventory sync.</div>
+      <button class="btn-master btn-primary" id="btn-install-app">
+        <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V3"/></svg>
+        Install App
+      </button>
+    </div>
+
+    <!-- State 3: Installing Progress (45 seconds) -->
+    <div class="glass-card" id="state-progress">
+      <div class="app-icon" style="background: transparent; border: 2px dashed var(--primary);">
+        <svg fill="none" viewBox="0 0 24 24" stroke="var(--primary)" stroke-width="2" class="spinning"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+      </div>
+      <div class="app-title">Installing Engine...</div>
+      <div class="app-desc">Preparing local database and downloading 3D assets. Please do not close this window.</div>
+      
+      <div class="progress-wrap">
+        <div class="progress-meta">
+          <span id="progress-text">Initializing...</span>
+          <span id="progress-pct">0%</span>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- State 4: Already Installed / Success -->
+    <div class="glass-card" id="state-installed">
+      <div class="app-icon" style="background: var(--success); border-color: var(--success);">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+      </div>
+      <div class="app-title">App Installed</div>
+      <div class="app-desc">Aarvi Stores is successfully installed on your device. You can now access it from your home screen.</div>
+      <button class="btn-master btn-success" id="btn-open-app">
+        Open Application
+      </button>
+    </div>
+
   </div>
 
+  <style>
+    .spinning { animation: spin 2s linear infinite; }
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+  </style>
+
   <script>
-    // 1. Service Worker & Manifest Registration Engine
+    // ==========================================
+    // 1. THREE.JS 3D SUPERMARKET ENGINE
+    // ==========================================
+    const canvas = document.getElementById('webgl-canvas');
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
+    const scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x0f172a); // Match CSS --bg-dark
+    scene.fog = new THREE.FogExp2(0x0f172a, 0.025); // Fade to dark in distance
+
+    const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+    
+    // Starting camera position (Entrance of the aisle)
+    const START_Z = 10;
+    const END_Z = -120; // 45-second deep journey down the aisle
+    camera.position.set(0, 3, START_Z);
+
+    // Lights
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+    scene.add(ambientLight);
+
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+    dirLight.position.set(10, 20, 10);
+    scene.add(dirLight);
+
+    // Procedural Supermarket Generation (No external GLB required, loads instantly)
+    function createProceduralAisle() {
+      const aisleGroup = new THREE.Group();
+
+      // Floor
+      const floorGeo = new THREE.PlaneGeometry(50, 300);
+      const floorMat = new THREE.MeshStandardMaterial({ 
+        color: 0x1e293b, 
+        roughness: 0.2, 
+        metalness: 0.8 
+      });
+      const floor = new THREE.Mesh(floorGeo, floorMat);
+      floor.rotation.x = -Math.PI / 2;
+      floor.position.z = -100;
+      aisleGroup.add(floor);
+
+      // Shelves Generator
+      const shelfGeo = new THREE.BoxGeometry(3, 8, 280);
+      const shelfMat = new THREE.MeshStandardMaterial({ color: 0x334155, roughness: 0.7 });
+      
+      const leftShelf = new THREE.Mesh(shelfGeo, shelfMat);
+      leftShelf.position.set(-6, 4, -100);
+      aisleGroup.add(leftShelf);
+
+      const rightShelf = new THREE.Mesh(shelfGeo, shelfMat);
+      rightShelf.position.set(6, 4, -100);
+      aisleGroup.add(rightShelf);
+
+      // Add colorful "products" to shelves
+      const colors = [0x2874f0, 0x10b981, 0xf59e0b, 0xef4444, 0x8b5cf6, 0xffffff];
+      const prodGeo = new THREE.BoxGeometry(0.8, 1.2, 0.8);
+      
+      for (let z = 5; z > -250; z -= 2) {
+        for (let y = 1; y < 8; y += 2) {
+          // Left products
+          if (Math.random() > 0.3) {
+            const mat = new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.4 });
+            const p = new THREE.Mesh(prodGeo, mat);
+            p.position.set(-4.5, y, z);
+            aisleGroup.add(p);
+          }
+          // Right products
+          if (Math.random() > 0.3) {
+            const mat = new THREE.MeshStandardMaterial({ color: colors[Math.floor(Math.random() * colors.length)], roughness: 0.4 });
+            const p = new THREE.Mesh(prodGeo, mat);
+            p.position.set(4.5, y, z);
+            aisleGroup.add(p);
+          }
+        }
+      }
+
+      // Neon Accent Strips along the aisle
+      const neonGeo = new THREE.BoxGeometry(0.1, 0.1, 280);
+      const neonMat = new THREE.MeshBasicMaterial({ color: 0x2874f0 });
+      const leftNeon = new THREE.Mesh(neonGeo, neonMat);
+      leftNeon.position.set(-4.4, 8.1, -100);
+      const rightNeon = new THREE.Mesh(neonGeo, neonMat);
+      rightNeon.position.set(4.4, 8.1, -100);
+      aisleGroup.add(leftNeon, rightNeon);
+
+      return aisleGroup;
+    }
+
+    const supermarket = createProceduralAisle();
+    scene.add(supermarket);
+
+    // Dynamic Parallax Variables
+    let targetX = 0;
+    let targetY = 0;
+    let currentInstallProgress = 0; // 0.0 to 1.0
+    let isAnimatingInstall = false;
+
+    // Mouse & Touch tracking for Gyro/Look effect
+    window.addEventListener('mousemove', (e) => {
+      targetX = (e.clientX / window.innerWidth) * 2 - 1;
+      targetY = -(e.clientY / window.innerHeight) * 2 + 1;
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length > 0) {
+        targetX = (e.touches[0].clientX / window.innerWidth) * 2 - 1;
+        targetY = -(e.touches[0].clientY / window.innerHeight) * 2 + 1;
+      }
+    }, { passive: true });
+
+    // Handle Resize
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // Main 3D Render Loop
+    function animate3D() {
+      requestAnimationFrame(animate3D);
+
+      // Smooth Parallax Camera Look
+      camera.position.x += (targetX * 2 - camera.position.x) * 0.05;
+      camera.position.y += ((3 + targetY * 1) - camera.position.y) * 0.05;
+      camera.lookAt(targetX * 5, 3, -100);
+
+      // If installing, move the camera deep into the aisle based on progress[span_0](start_span)[span_0](end_span)
+      if (isAnimatingInstall) {
+        const targetZ = START_Z + (END_Z - START_Z) * currentInstallProgress;
+        camera.position.z += (targetZ - camera.position.z) * 0.05; // Smooth interpolation
+      } else {
+        // Subtle floating when idle
+        camera.position.z = START_Z + Math.sin(Date.now() * 0.001) * 0.5;
+      }
+
+      renderer.render(scene, camera);
+    }
+    animate3D();
+
+
+    // ==========================================
+    // 2. STRICT UI STATE & PWA INSTALL LOGIC[span_1](start_span)[span_1](end_span)
+    // ==========================================
+    
+    // Service Worker Registration
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
-          .then(reg => console.log('SW Registered:', reg.scope))
-          .catch(err => console.error('SW Failed:', err));
+        navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW Failed:', err));
       });
     }
 
-    // 2. Environment & Installation Checks
-    const btnInstall = document.getElementById('btn-install');
-    const installBtnText = document.getElementById('install-btn-text');
-    const progressBox = document.getElementById('progress-box');
-    const progressFill = document.getElementById('progress-fill');
-    const progressPct = document.getElementById('progress-pct');
-    const progressStatusText = document.getElementById('progress-status-text');
-    const browserNotice = document.getElementById('browser-notice');
+    const cards = {
+      unsupported: document.getElementById('state-unsupported'),
+      install: document.getElementById('state-install'),
+      progress: document.getElementById('state-progress'),
+      installed: document.getElementById('state-installed')
+    };
 
-    let deferredPrompt = null;
-    const INSTALL_DURATION_MS = 45000; // Exact 45 seconds animation duration
+    function showUIState(stateName) {
+      Object.values(cards).forEach(c => c.classList.remove('active'));
+      if (cards[stateName]) cards[stateName].classList.add('active');
+    }
 
-    // Check if running as installed standalone PWA or flagged in localStorage
+    // Environment Checking
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
     const isLocalStorageMarkedInstalled = localStorage.getItem('aarvi_pwa_installed') === 'true';
+    
+    // Strict Chrome Detection for Reliable PWA
+    const isIOSChrome = navigator.userAgent.match("CriOS");
+    const isChrome = /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+    const isGenuineChrome = (isChrome || isIOSChrome) && !/Edg|OPR|Brave|SamsungBrowser/.test(navigator.userAgent);
 
-    // Check if browser is Chrome (or compatible Chromium)
-    const isUserAgentChrome = /CriOS|Chrome/.test(navigator.userAgent) && !/Edge|OPR|SamsungBrowser/.test(navigator.userAgent);
+    let deferredPrompt = null;
+    const INSTALL_DURATION_MS = 45000; // Exact 45 seconds[span_2](start_span)[span_2](end_span)
 
+    // Determine Initial State
     if (isStandalone || isLocalStorageMarkedInstalled) {
-      setInstalledState();
-    } else if (!isUserAgentChrome) {
-      // Non-chrome browser detection fallback
-      browserNotice.classList.add('show');
-      installBtnText.innerText = "Open in Chrome";
-      btnInstall.onclick = () => {
-        alert("Please open this URL inside Google Chrome to install the Aarvi Stores PWA application.");
-      };
+      showUIState('installed');
+    } else if (!isGenuineChrome) {
+      showUIState('unsupported');
+    } else {
+      showUIState('install');
     }
 
-    function setInstalledState() {
-      btnInstall.style.display = 'flex';
-      btnInstall.classList.add('btn-installed');
-      installBtnText.innerText = "App Installed ✓";
-      progressBox.classList.remove('active');
-      localStorage.setItem('aarvi_pwa_installed', 'true');
-    }
-
-    // 3. PWA Prompt Handler
+    // PWA Prompt Capture
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
     });
 
     window.addEventListener('appinstalled', () => {
-      setInstalledState();
+      localStorage.setItem('aarvi_pwa_installed', 'true');
+      if (!isAnimatingInstall) showUIState('installed');
       deferredPrompt = null;
     });
 
-    // 4. Install Button Click & 45-Sec Animation Flow
-    btnInstall.addEventListener('click', async () => {
+    // Copy Link Action
+    document.getElementById('btn-copy-link').addEventListener('click', (e) => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      navigator.clipboard.writeText(window.location.href);
+      const btn = e.currentTarget;
+      const originalHTML = btn.innerHTML;
+      btn.innerHTML = `<svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg> Copied!`;
+      btn.classList.add('btn-success');
+      btn.classList.remove('btn-secondary');
+      setTimeout(() => {
+        btn.innerHTML = originalHTML;
+        btn.classList.remove('btn-success');
+        btn.classList.add('btn-secondary');
+      }, 2000);
+    });
+
+    // Open App Action (When already installed)
+    document.getElementById('btn-open-app').addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      window.location.href = "home.html";
+    });
+
+    // 45-Second Install Animation Flow[span_3](start_span)[span_3](end_span)
+    document.getElementById('btn-install-app').addEventListener('click', async () => {
       if (isStandalone || isLocalStorageMarkedInstalled) return;
       if (navigator.vibrate) navigator.vibrate(30);
 
-      // Trigger native browser PWA install banner if captured
       if (deferredPrompt) {
         deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
@@ -350,46 +508,44 @@
         }
       }
 
-      // Hide button and launch 45s installing animation
-      btnInstall.style.display = 'none';
-      progressBox.classList.add('active');
+      // Switch to Progress UI & Trigger 3D Camera Movement
+      showUIState('progress');
+      isAnimatingInstall = true;
 
-      let startTime = Date.now();
+      const fillEl = document.getElementById('progress-fill');
+      const pctEl = document.getElementById('progress-pct');
+      const textEl = document.getElementById('progress-text');
+      const startTime = Date.now();
       
       const interval = setInterval(() => {
         let elapsed = Date.now() - startTime;
-        let progress = Math.min(100, Math.floor((elapsed / INSTALL_DURATION_MS) * 100));
+        let progressRaw = elapsed / INSTALL_DURATION_MS;
+        let progressPct = Math.min(100, Math.floor(progressRaw * 100));
 
-        progressFill.style.width = progress + '%';
-        progressPct.innerText = progress + '%';
+        currentInstallProgress = Math.min(1, progressRaw); // Feed to 3D engine
 
-        if (progress < 30) {
-          progressStatusText.innerText = 'Downloading assets...';
-        } else if (progress < 70) {
-          progressStatusText.innerText = 'Caching core shell...';
-        } else if (progress < 98) {
-          progressStatusText.innerText = 'Finalizing installation...';
+        fillEl.style.width = progressPct + '%';
+        pctEl.innerText = progressPct + '%';
+
+        if (progressPct < 25) {
+          textEl.innerText = 'Downloading 3D engine...';
+        } else if (progressPct < 50) {
+          textEl.innerText = 'Syncing local inventory...';
+        } else if (progressPct < 85) {
+          textEl.innerText = 'Building offline cache...';
+        } else if (progressPct < 99) {
+          textEl.innerText = 'Finalizing installation...';
         } else {
-          progressStatusText.innerText = 'Done!';
+          textEl.innerText = 'Complete!';
         }
 
         if (elapsed >= INSTALL_DURATION_MS) {
           clearInterval(interval);
-          setInstalledState();
+          isAnimatingInstall = false;
+          localStorage.setItem('aarvi_pwa_installed', 'true');
+          showUIState('installed');
         }
-      }, 100);
-    });
-
-    // 5. Gyro 3D Tilt Effect on Desktop / Mobile
-    const card = document.getElementById('card-3d');
-    window.addEventListener('mousemove', (e) => {
-      let xAxis = (window.innerWidth / 2 - e.pageX) / 25;
-      let yAxis = (window.innerHeight / 2 - e.pageY) / 25;
-      card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
-    });
-
-    window.addEventListener('mouseleave', () => {
-      card.style.transform = `rotateX(0deg) rotateY(0deg)`;
+      }, 30); // 30ms updates for buttery smooth UI bar
     });
   </script>
 </body>
