@@ -189,11 +189,34 @@
 
     /* Dark Room Crop Engine */
     .crop-editor-mode { --bg-color: #000; --surface-color: #1a1a1a; --border: #333; --text-main: #fff; }
-    .crop-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #000; touch-action: none; width: 100%; }
-    #crop-target-img { position: absolute; top: 0; left: 0; transform-origin: top left; will-change: transform; cursor: grab; }
+    .fs-header { display: flex; align-items: center; justify-content: space-between; padding: calc(12px + env(safe-area-inset-top)) 16px 12px; z-index: 20; flex-shrink: 0; }
+    .crop-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; background: #080808; touch-action: none; width: 100%; user-select: none; -webkit-user-select: none; }
+    .crop-bg-layer { position: absolute; width: 280px; height: 280px; border-radius: 8px; background: #ffffff; z-index: 1; pointer-events: none; transition: background 0.2s ease; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
+    @media(min-width: 400px) { .crop-bg-layer { width: 340px; height: 340px; } }
+    @media(min-width: 600px) { .crop-bg-layer { width: 400px; height: 400px; } }
+    #crop-target-img { position: absolute; top: 0; left: 0; transform-origin: top left; will-change: transform; cursor: grab; z-index: 2; user-select: none; -webkit-user-drag: none; }
     #crop-target-img:active { cursor: grabbing; }
-    .crop-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; }
-    .crop-footer { padding: 24px; display: flex; gap: 16px; background: #111; padding-bottom: max(24px, env(safe-area-inset-bottom)); border-top: 1px solid #222; }
+    .crop-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; z-index: 3; }
+    #crop-square { box-shadow: 0 0 0 9999px rgba(0,0,0,0.76); border: 2px solid rgba(255,255,255,0.92); }
+    .crop-grid-lines { position: absolute; inset: 0; opacity: 0; transition: opacity 0.2s ease; pointer-events: none; background-image: linear-gradient(to right, rgba(255,255,255,0.35) 1px, transparent 1px), linear-gradient(to bottom, rgba(255,255,255,0.35) 1px, transparent 1px); background-size: 33.333% 33.333%; }
+    .crop-area.interacting .crop-grid-lines { opacity: 1; }
+    .crop-toolbar { background: #111; border-top: 1px solid #222; padding: 12px 18px 4px; display: flex; flex-direction: column; gap: 12px; z-index: 10; flex-shrink: 0; }
+    .crop-controls-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+    .crop-mode-pills { display: flex; gap: 8px; }
+    .crop-pill-btn { background: #222; color: #ddd; border: 1px solid #383838; padding: 7px 12px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 5px; transition: all 0.15s; }
+    .crop-pill-btn:active { transform: scale(0.95); }
+    .crop-pill-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .crop-zoom-wrap { display: flex; align-items: center; gap: 10px; flex: 1; max-width: 220px; }
+    .crop-zoom-slider { -webkit-appearance: none; appearance: none; width: 100%; height: 5px; border-radius: 4px; background: #333; outline: none; }
+    .crop-zoom-slider::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #fff; border: 2px solid var(--primary); cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.4); }
+    .crop-zoom-badge { font-size: 11px; font-weight: 800; color: #aaa; min-width: 40px; text-align: right; font-variant-numeric: tabular-nums; }
+    .crop-bg-bar { display: flex; align-items: center; gap: 10px; overflow-x: auto; padding-bottom: 4px; }
+    .crop-bg-label { font-size: 11px; font-weight: 800; color: #888; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    .crop-swatches { display: flex; align-items: center; gap: 10px; }
+    .crop-swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid #444; cursor: pointer; flex-shrink: 0; transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s; position: relative; }
+    .crop-swatch:active { transform: scale(0.9); }
+    .crop-swatch.active { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(40,116,240,0.45); transform: scale(1.08); }
+    .crop-footer { padding: 14px 20px; display: flex; gap: 14px; background: #111; padding-bottom: max(20px, env(safe-area-inset-bottom)); border-top: 1px solid #1e1e1e; flex-shrink: 0; z-index: 10; }
     .btn-crop { flex: 1; padding: 16px; border-radius: 16px; font-size: 16px; font-weight: 800; border: none; cursor: pointer; transition: transform 0.15s; }
     .btn-crop:active { transform: scale(0.96); }
     .btn-crop-retake { background: #2a2a2a; color: #fff; border: 1px solid #444; }
@@ -422,13 +445,42 @@
     <div class="fs-header" style="background:rgba(0,0,0,0.85); border-bottom:1px solid #222;">
       <div style="display:flex; align-items:center; gap:12px;">
         <button class="btn-icon btn-close-modal" style="background:#222; color:#fff; border:none;"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" /></svg></button>
-        <div class="sheet-title" style="color:#fff;">Crop Square</div>
+        <div class="sheet-title" style="color:#fff;">Crop Square (1:1)</div>
       </div>
+      <div style="font-size:12px; color:#999; font-weight:700;">Pinch or Slide to Zoom</div>
     </div>
     <div class="crop-area" id="crop-area">
+      <!-- Dedicated 1:1 Background Layer behind the image -->
+      <div class="crop-bg-layer" id="crop-bg-layer"></div>
       <img id="crop-target-img" src="">
       <div class="crop-mask">
-        <div class="camera-overlay-square" id="crop-square"></div>
+        <div class="camera-overlay-square" id="crop-square">
+          <div class="crop-grid-lines"></div>
+        </div>
+      </div>
+    </div>
+    <div class="crop-toolbar">
+      <div class="crop-controls-row">
+        <div class="crop-mode-pills">
+          <button type="button" class="crop-pill-btn" id="btn-crop-fit" title="Fit entire image inside 1:1 square">Fit Full</button>
+          <button type="button" class="crop-pill-btn active" id="btn-crop-fill" title="Fill 1:1 square completely">Fill 1:1</button>
+          <button type="button" class="crop-pill-btn" id="btn-crop-center" title="Center image">Center</button>
+        </div>
+        <div class="crop-zoom-wrap">
+          <input type="range" id="crop-zoom-slider" class="crop-zoom-slider" min="10" max="400" value="100">
+          <span class="crop-zoom-badge" id="crop-zoom-badge">100%</span>
+        </div>
+      </div>
+      <div class="crop-bg-bar">
+        <span class="crop-bg-label">1:1 Backdrop:</span>
+        <div class="crop-swatches" id="crop-swatches">
+          <button type="button" class="crop-swatch active" data-bg-type="solid" data-bg-c1="#ffffff" style="background:#ffffff;" title="Pure White"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#f5f7fa" data-bg-c2="#c3cfe2" style="background:linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);" title="Soft Studio Gradient"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#fdfcfb" data-bg-c2="#e2d1c3" style="background:linear-gradient(135deg, #fdfcfb 0%, #e2d1c3 100%);" title="Warm Cream Gradient"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#ffecd2" data-bg-c2="#fcb69f" style="background:linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);" title="Peach Glow Gradient"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#e0c3fc" data-bg-c2="#8ec5fc" style="background:linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);" title="Sky Lavender Gradient"></button>
+          <button type="button" class="crop-swatch" data-bg-type="gradient" data-bg-c1="#232526" data-bg-c2="#414345" style="background:linear-gradient(135deg, #232526 0%, #414345 100%);" title="Charcoal Dark Gradient"></button>
+        </div>
       </div>
     </div>
     <div class="crop-footer">
@@ -937,13 +989,99 @@
       e.target.value = '';
     });
 
-    // Dark Room Square Crop Logic
+    // Dark Room Square Crop Logic (Upgraded with 1:1 Background Layer, Pinch-to-Zoom & Fit/Fill)
     const cropImgTarget = document.getElementById('crop-target-img');
     const cropArea = document.getElementById('crop-area');
     const cropSquare = document.getElementById('crop-square');
+    const cropBgLayer = document.getElementById('crop-bg-layer');
+    const cropZoomSlider = document.getElementById('crop-zoom-slider');
+    const cropZoomBadge = document.getElementById('crop-zoom-badge');
+    const btnCropFit = document.getElementById('btn-crop-fit');
+    const btnCropFill = document.getElementById('btn-crop-fill');
+    const btnCropCenter = document.getElementById('btn-crop-center');
     
     let cropScale = 1, cropX = 0, cropY = 0, startX = 0, startY = 0;
     let isDragging = false, imgOrigW = 0, imgOrigH = 0, squareSize = 300;
+    let fitScale = 1, coverScale = 1, minScale = 0.1, maxScale = 4;
+    let isPinching = false, initialPinchDist = 0, initialPinchScale = 1;
+    let pinchMidX = 0, pinchMidY = 0;
+    let activeBgConfig = { type: 'solid', c1: '#ffffff', c2: '#ffffff' };
+
+    // 1:1 Backdrop Swatch Selector
+    document.querySelectorAll('#crop-swatches .crop-swatch').forEach(swatch => {
+      swatch.addEventListener('click', () => {
+        if (navigator.vibrate) navigator.vibrate(8);
+        document.querySelectorAll('#crop-swatches .crop-swatch').forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+        const type = swatch.getAttribute('data-bg-type');
+        const c1 = swatch.getAttribute('data-bg-c1');
+        const c2 = swatch.getAttribute('data-bg-c2') || c1;
+        activeBgConfig = { type, c1, c2 };
+        if (type === 'gradient') {
+          cropBgLayer.style.background = `linear-gradient(135deg, ${c1} 0%, ${c2} 100%)`;
+        } else {
+          cropBgLayer.style.background = c1;
+        }
+      });
+    });
+
+    function syncZoomUI() {
+      const pct = Math.round((cropScale / fitScale) * 100);
+      cropZoomBadge.innerText = `${pct}%`;
+      const sliderVal = ((cropScale - minScale) / (maxScale - minScale)) * 390 + 10;
+      cropZoomSlider.value = Math.max(10, Math.min(400, sliderVal));
+
+      const eps = 0.005;
+      btnCropFit.classList.toggle('active', Math.abs(cropScale - fitScale) < eps);
+      btnCropFill.classList.toggle('active', Math.abs(cropScale - coverScale) < eps);
+    }
+
+    function centerImageAtScale(targetScale, animate = true) {
+      cropScale = Math.max(minScale, Math.min(maxScale, targetScale));
+      const areaRect = cropArea.getBoundingClientRect();
+      const displayW = imgOrigW * cropScale;
+      const displayH = imgOrigH * cropScale;
+      cropX = (areaRect.width - displayW) / 2;
+      cropY = (areaRect.height - displayH) / 2;
+      if (animate) {
+        cropImgTarget.style.transition = 'transform 0.22s cubic-bezier(0.2, 0.8, 0.2, 1)';
+        setTimeout(() => { cropImgTarget.style.transition = 'none'; }, 240);
+      }
+      updateCropTransform();
+      syncZoomUI();
+    }
+
+    function zoomAroundPoint(newScale, focalX, focalY) {
+      const clampedScale = Math.max(minScale, Math.min(maxScale, newScale));
+      const scaleRatio = clampedScale / cropScale;
+      cropX = focalX - (focalX - cropX) * scaleRatio;
+      cropY = focalY - (focalY - cropY) * scaleRatio;
+      cropScale = clampedScale;
+      updateCropTransform();
+      syncZoomUI();
+    }
+
+    btnCropFit.addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      centerImageAtScale(fitScale, true);
+    });
+
+    btnCropFill.addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      centerImageAtScale(coverScale, true);
+    });
+
+    btnCropCenter.addEventListener('click', () => {
+      if (navigator.vibrate) navigator.vibrate(10);
+      centerImageAtScale(cropScale, true);
+    });
+
+    cropZoomSlider.addEventListener('input', (e) => {
+      const val = Number(e.target.value);
+      const targetScale = minScale + ((val - 10) / 390) * (maxScale - minScale);
+      const areaRect = cropArea.getBoundingClientRect();
+      zoomAroundPoint(targetScale, areaRect.width / 2, areaRect.height / 2);
+    });
 
     function initCropEngine(base64Data) {
       const tempImg = new Image();
@@ -961,7 +1099,14 @@
 
           const scaleX = squareSize / imgOrigW;
           const scaleY = squareSize / imgOrigH;
-          cropScale = Math.max(scaleX, scaleY); // Strict Cover scale
+          fitScale = Math.min(scaleX, scaleY);   // Fits entire image (even tall screenshots) inside 1:1
+          coverScale = Math.max(scaleX, scaleY); // Fills 1:1 square edge-to-edge
+          minScale = fitScale * 0.65;            // Allows zooming out with extra margin around image
+          maxScale = Math.max(coverScale * 3.5, fitScale * 5);
+
+          // If the image is a tall screenshot or wide banner, start in Fit Full mode so nothing is cut off; otherwise start in Fill
+          const aspectRatio = Math.max(imgOrigW / imgOrigH, imgOrigH / imgOrigW);
+          cropScale = aspectRatio > 1.35 ? fitScale : coverScale;
           
           const displayW = imgOrigW * cropScale;
           const displayH = imgOrigH * cropScale;
@@ -971,6 +1116,7 @@
           cropY = (areaRect.height - displayH) / 2;
           
           updateCropTransform();
+          syncZoomUI();
           cropImgTarget.style.opacity = '1';
         }, 400); 
       };
@@ -980,11 +1126,33 @@
     function updateCropTransform() {
       const areaRect = cropArea.getBoundingClientRect();
       const sqRect = cropSquare.getBoundingClientRect();
-      
-      const minX = sqRect.right - areaRect.left - (imgOrigW * cropScale);
-      const maxX = sqRect.left - areaRect.left;
-      const minY = sqRect.bottom - areaRect.top - (imgOrigH * cropScale);
-      const maxY = sqRect.top - areaRect.top;
+      const sqLeft = sqRect.left - areaRect.left;
+      const sqTop = sqRect.top - areaRect.top;
+      const sqRight = sqRect.right - areaRect.left;
+      const sqBottom = sqRect.bottom - areaRect.top;
+
+      const displayW = imgOrigW * cropScale;
+      const displayH = imgOrigH * cropScale;
+
+      // Flexible bounds: let users pan any part of the image (top, bottom, or zoomed-out) anywhere inside the 1:1 background square
+      const bleedAllowance = squareSize * 0.25;
+      let minX, maxX, minY, maxY;
+
+      if (displayW <= squareSize) {
+        minX = sqLeft - bleedAllowance;
+        maxX = sqRight - displayW + bleedAllowance;
+      } else {
+        minX = sqRight - displayW - bleedAllowance;
+        maxX = sqLeft + bleedAllowance;
+      }
+
+      if (displayH <= squareSize) {
+        minY = sqTop - bleedAllowance;
+        maxY = sqBottom - displayH + bleedAllowance;
+      } else {
+        minY = sqBottom - displayH - bleedAllowance;
+        maxY = sqTop + bleedAllowance;
+      }
       
       if(cropX > maxX) cropX = maxX;
       if(cropX < minX) cropX = minX;
@@ -994,15 +1162,48 @@
       cropImgTarget.style.transform = `translate(${cropX}px, ${cropY}px) scale(${cropScale})`;
     }
 
+    const getTouchDist = (t1, t2) => Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+
     const onStart = (e) => {
+      cropImgTarget.style.transition = 'none';
+      cropArea.classList.add('interacting');
+
+      if (e.touches && e.touches.length === 2) {
+        isDragging = false;
+        isPinching = true;
+        initialPinchDist = getTouchDist(e.touches[0], e.touches[1]);
+        initialPinchScale = cropScale;
+        const areaRect = cropArea.getBoundingClientRect();
+        pinchMidX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - areaRect.left;
+        pinchMidY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - areaRect.top;
+        return;
+      }
+
+      isPinching = false;
       isDragging = true;
-      cropImgTarget.style.transition = 'none'; 
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
       const clientY = e.touches ? e.touches[0].clientY : e.clientY;
       startX = clientX - cropX;
       startY = clientY - cropY;
     };
     const onMove = (e) => {
+      if (isPinching && e.touches && e.touches.length === 2) {
+        e.preventDefault();
+        const dist = getTouchDist(e.touches[0], e.touches[1]);
+        if (initialPinchDist > 0) {
+          const newScale = initialPinchScale * (dist / initialPinchDist);
+          const areaRect = cropArea.getBoundingClientRect();
+          const curMidX = ((e.touches[0].clientX + e.touches[1].clientX) / 2) - areaRect.left;
+          const curMidY = ((e.touches[0].clientY + e.touches[1].clientY) / 2) - areaRect.top;
+          cropX += (curMidX - pinchMidX);
+          cropY += (curMidY - pinchMidY);
+          pinchMidX = curMidX;
+          pinchMidY = curMidY;
+          zoomAroundPoint(newScale, pinchMidX, pinchMidY);
+        }
+        return;
+      }
+
       if(!isDragging) return;
       e.preventDefault();
       const clientX = e.touches ? e.touches[0].clientX : e.clientX;
@@ -1011,7 +1212,28 @@
       cropY = clientY - startY;
       updateCropTransform();
     };
-    const onEnd = () => { isDragging = false; };
+    const onEnd = (e) => {
+      if (e && e.touches && e.touches.length === 1) {
+        isPinching = false;
+        isDragging = true;
+        startX = e.touches[0].clientX - cropX;
+        startY = e.touches[0].clientY - cropY;
+        return;
+      }
+      isDragging = false;
+      isPinching = false;
+      cropArea.classList.remove('interacting');
+    };
+
+    // Desktop Mouse-Wheel Zoom Support
+    cropArea.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      const areaRect = cropArea.getBoundingClientRect();
+      const focalX = e.clientX - areaRect.left;
+      const focalY = e.clientY - areaRect.top;
+      const zoomFactor = e.deltaY < 0 ? 1.08 : 0.92;
+      zoomAroundPoint(cropScale * zoomFactor, focalX, focalY);
+    }, { passive: false });
     
     cropArea.addEventListener('mousedown', onStart);
     cropArea.addEventListener('touchstart', onStart, {passive: false});
@@ -1036,9 +1258,31 @@
       
       const canvas = document.createElement('canvas');
       canvas.width = 800; canvas.height = 800;
-      canvas.getContext('2d').drawImage(cropImgTarget, sourceX, sourceY, sourceSize, sourceSize, 0, 0, 800, 800);
+      const ctx = canvas.getContext('2d');
+
+      // Step 1: Paint the 1:1 Background Layer (Solid White or Selected Gradient) onto the 800x800 canvas
+      if (activeBgConfig.type === 'gradient') {
+        const grad = ctx.createLinearGradient(0, 0, 800, 800);
+        grad.addColorStop(0, activeBgConfig.c1);
+        grad.addColorStop(1, activeBgConfig.c2);
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = activeBgConfig.c1 || '#ffffff';
+      }
+      ctx.fillRect(0, 0, 800, 800);
+
+      // Step 2: Map the exact zoomed & panned image coordinates onto the 800x800 1:1 canvas
+      const canvasRatio = 800 / squareSize;
+      const destX = (cropX - sqX) * canvasRatio;
+      const destY = (cropY - sqY) * canvasRatio;
+      const destW = (imgOrigW * cropScale) * canvasRatio;
+      const destH = (imgOrigH * cropScale) * canvasRatio;
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(cropImgTarget, 0, 0, imgOrigW, imgOrigH, destX, destY, destW, destH);
       
-      const base64Final = canvas.toDataURL('image/jpeg', 0.85);
+      const base64Final = canvas.toDataURL('image/jpeg', 0.9);
       STATE.tempBase64Img = base64Final;
       
       if (STATE.pendingImgTarget === 'cat') {
