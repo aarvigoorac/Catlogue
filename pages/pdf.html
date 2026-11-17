@@ -655,7 +655,11 @@
       hasMoreProd: true,
       selectionMode: false,
       selectedTemplate: 'executive',
-      selectedItems: loadStoredItems()
+      selectedItems: loadStoredItems(),
+      isLoadingCat: false,
+      isLoadingProd: false,
+      catFetchToken: 0,
+      prodFetchToken: 0
     };
 
     if (STATE.selectedItems.length > 0) {
@@ -931,7 +935,10 @@
     }
 
     async function loadCategories(isSwitch = false) {
+      const currentToken = ++STATE.catFetchToken;
+      STATE.isLoadingCat = true;
       ui.feed.className = 'feed-container grid-layout';
+      
       if (isSwitch || !ui.feed.innerHTML.includes('pointer-events:none')) {
         ui.feed.innerHTML = Array(4).fill(SKELETONS.category).join('');
       }
@@ -945,6 +952,8 @@
         }
 
         const snap = await getDocs(q);
+        if (currentToken !== STATE.catFetchToken || STATE.view !== 'categories') return;
+        
         ui.feed.innerHTML = '';
 
         if (snap.empty) {
@@ -953,7 +962,13 @@
           return;
         }
 
+        const renderedCatIds = new Set();
         snap.forEach(docSnap => {
+          if (renderedCatIds.has(docSnap.id)) return;
+          renderedCatIds.add(docSnap.id);
+          
+          if (ui.feed.querySelector(`[data-cat-id="${docSnap.id}"]`)) return;
+
           const cat = { id: docSnap.id, ...docSnap.data() };
           const resolvedCatImg = getProductImage(cat);
           const selectedInCat = STATE.selectedItems.filter(i => i.categoryId === cat.id).length;
@@ -980,11 +995,18 @@
           ui.feed.appendChild(card);
         });
       } catch (err) {
-        handleFirestoreError(err, ui.feed);
+        if (currentToken === STATE.catFetchToken) handleFirestoreError(err, ui.feed);
+      } finally {
+        if (currentToken === STATE.catFetchToken) STATE.isLoadingCat = false;
       }
     }
 
     async function loadProducts(isNew = true) {
+      if (!isNew && (STATE.isLoadingProd || !STATE.hasMoreProd || !STATE.lastProdDoc)) return;
+
+      const currentToken = isNew ? ++STATE.prodFetchToken : STATE.prodFetchToken;
+      STATE.isLoadingProd = true;
+
       if (isNew) {
         ui.feed.className = STATE.selectionMode ? 'feed-container selection-mode' : 'feed-container';
         ui.feed.innerHTML = Array(4).fill(SKELETONS.product).join('');
@@ -992,7 +1014,10 @@
         STATE.hasMoreProd = true;
       }
 
-      if (!STATE.hasMoreProd) return;
+      if (!STATE.hasMoreProd) {
+        STATE.isLoadingProd = false;
+        return;
+      }
 
       try {
         let q;
@@ -1007,6 +1032,8 @@
         }
 
         const snap = await getDocs(q);
+        if (currentToken !== STATE.prodFetchToken || STATE.view !== 'products') return;
+
         if (isNew) ui.feed.innerHTML = '';
 
         if (snap.empty) {
@@ -1019,6 +1046,8 @@
         STATE.lastProdDoc = snap.docs[snap.docs.length - 1];
 
         snap.forEach(docSnap => {
+          if (ui.feed.querySelector(`[data-id="${docSnap.id}"]`)) return;
+
           const prod = { id: docSnap.id, ...docSnap.data() };
           const resolvedProdImg = getProductImage(prod);
           const selected = isProductSelected(prod.id);
@@ -1126,13 +1155,15 @@
 
         syncVisibleCardsSelection();
       } catch (err) {
-        handleFirestoreError(err, ui.feed);
+        if (currentToken === STATE.prodFetchToken) handleFirestoreError(err, ui.feed);
+      } finally {
+        if (currentToken === STATE.prodFetchToken) STATE.isLoadingProd = false;
       }
     }
 
     // Infinite Scroll
     ui.feed.addEventListener('scroll', () => {
-      if (STATE.view === 'products' && STATE.hasMoreProd) {
+      if (STATE.view === 'products' && STATE.hasMoreProd && !STATE.isLoadingProd && STATE.lastProdDoc) {
         if (ui.feed.scrollTop + ui.feed.clientHeight >= ui.feed.scrollHeight - 100) {
           loadProducts(false);
         }
@@ -1994,10 +2025,14 @@
       }
     });
 
-    // Boot
+    // Boot - Strictly initialized once!
     updateSelectionUI();
+    let hasBooted = false;
     onAuthStateChanged(auth, (user) => {
-      if (user) loadCategories();
+      if (user && !hasBooted) {
+        hasBooted = true;
+        loadCategories();
+      }
     });
   </script>
 </body>
