@@ -127,6 +127,7 @@
     .dialog-overlay.active { opacity: 1; pointer-events: auto; }
     .dialog-box { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.95); background: var(--surface-color); width: 90%; max-width: 340px; border-radius: 24px; padding: 24px; z-index: 4001; opacity: 0; pointer-events: none; transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1); box-shadow: 0 10px 40px rgba(0,0,0,0.2); text-align: center; }
     .dialog-box.active { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+    #dialog-alert { z-index: 5500; }
 
     #modal-camera, #modal-crop { z-index: 5000; }
     #viewer-zoom { z-index: 6000; }
@@ -194,7 +195,7 @@
     .crop-bg-layer { position: absolute; width: 280px; height: 280px; border-radius: 8px; background: #ffffff; z-index: 1; pointer-events: none; transition: background 0.2s ease; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.06); }
     @media(min-width: 400px) { .crop-bg-layer { width: 340px; height: 340px; } }
     @media(min-width: 600px) { .crop-bg-layer { width: 400px; height: 400px; } }
-    #crop-target-img { position: absolute; top: 0; left: 0; transform-origin: top left; will-change: transform; cursor: grab; z-index: 2; user-select: none; -webkit-user-drag: none; }
+    #crop-target-img { position: absolute; top: 0; left: 0; transform-origin: top left; will-change: transform; cursor: grab; z-index: 2; user-select: none; -webkit-user-drag: none; max-width: none !important; max-height: none !important; }
     #crop-target-img:active { cursor: grabbing; }
     .crop-mask { position: absolute; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; display: flex; align-items: center; justify-content: center; z-index: 3; }
     #crop-square { box-shadow: 0 0 0 9999px rgba(0,0,0,0.76); border: 2px solid rgba(255,255,255,0.92); }
@@ -432,7 +433,7 @@
       <div class="camera-overlay-square"></div>
       <div class="cam-fallback" id="cam-fallback">
         <div style="margin-bottom:16px;">Camera access denied.</div>
-        <button class="btn-master btn-primary" style="width:auto; padding:12px 24px;" onclick="document.getElementById('btn-open-gallery').click()">Open Gallery Instead</button>
+        <button class="btn-master btn-primary" style="width:auto; padding:12px 24px;" id="btn-cam-fallback-gallery">Open Gallery Instead</button>
       </div>
     </div>
     <div class="camera-controls">
@@ -551,6 +552,18 @@
     </div>
   </div>
 
+  <!-- 10. Universal Mobile-Back-Supported Alert / Error Dialog (Replaces Browser alert()) -->
+  <div class="dialog-box" id="dialog-alert">
+    <div class="dialog-icon" id="alert-icon-wrap">
+      <svg fill="none" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" /></svg>
+    </div>
+    <div class="dialog-title" id="alert-title">Notice</div>
+    <div class="dialog-desc" id="alert-desc">Please check your input.</div>
+    <div class="dialog-actions">
+      <button class="btn-master btn-primary btn-close-modal" id="btn-alert-ok">OK</button>
+    </div>
+  </div>
+
   <script type="module">
     import { auth, db } from '../config.js';
     import { collection, query, where, orderBy, limit, getDocs, doc, addDoc, updateDoc, deleteDoc, writeBatch, startAfter } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -568,7 +581,14 @@
       tempBase64Img: null,
       pendingImgTarget: null,
       lastProdDoc: null,
-      hasMoreProd: true
+      hasMoreProd: true,
+      isLoadingCat: false,
+      isLoadingProd: false,
+      catFetchToken: 0,
+      prodFetchToken: 0,
+      isSavingCat: false,
+      isSavingProd: false,
+      isDeleting: false
     };
 
     const getProductImage = (item) => {
@@ -632,31 +652,97 @@
         </div>`
     };
 
-    // --- 1. Routing Engine (Hardware Back Native Match) ---
+    // --- 1. Routing Engine (Promise-Synced Nested Modal Stack + Hardware Back Support) ---
+    let popstateWaiters = [];
+
+    function syncOverlayStates() {
+      const hasSheets = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('bottom-sheet'));
+      ui.overlay.classList.toggle('active', hasSheets);
+
+      const hasDialogs = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('dialog-box'));
+      ui.dialogOverlay.classList.toggle('active', hasDialogs);
+    }
+
     function openModal(modalId) {
       if (navigator.vibrate) navigator.vibrate(10);
       const el = document.getElementById(modalId);
       if(!el) return;
 
-      if(el.classList.contains('bottom-sheet')) ui.overlay.classList.add('active');
-      if(el.classList.contains('dialog-box')) ui.dialogOverlay.classList.add('active');
-      
+      // Prevent duplicate consecutive stack entries for the exact same modal
+      if (STATE.modalStack[STATE.modalStack.length - 1] === modalId) {
+        el.classList.add('active');
+        syncOverlayStates();
+        return;
+      }
+
       el.classList.add('active');
       STATE.modalStack.push(modalId);
-      history.pushState({ modal: modalId }, '');
+      syncOverlayStates();
+      history.pushState({ modal: modalId, depth: STATE.modalStack.length }, '');
     }
 
     function closeModalUI(modalId) {
       const el = document.getElementById(modalId);
       if(el) el.classList.remove('active');
-      
-      const hasSheets = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('bottom-sheet'));
-      if(!hasSheets) ui.overlay.classList.remove('active');
-
-      const hasDialogs = STATE.modalStack.some(id => document.getElementById(id)?.classList.contains('dialog-box'));
-      if(!hasDialogs) ui.dialogOverlay.classList.remove('active');
-      
+      syncOverlayStates();
       if(modalId === 'modal-camera') stopCamera();
+    }
+
+    // Safely closes the top modal via history.back() and resolves when popstate completes
+    function closeTopModal() {
+      return new Promise((resolve) => {
+        if (STATE.modalStack.length === 0) {
+          resolve();
+          return;
+        }
+        let settled = false;
+        const done = () => {
+          if (settled) return;
+          settled = true;
+          resolve();
+        };
+        popstateWaiters.push(done);
+        history.back();
+        // Fallback safety in case mobile WebView suppresses popstate while native picker is open
+        setTimeout(() => {
+          if (!settled) {
+            popstateWaiters = popstateWaiters.filter(fn => fn !== done);
+            if (STATE.modalStack.length > 0) {
+              const top = STATE.modalStack.pop();
+              closeModalUI(top);
+            }
+            done();
+          }
+        }, 350);
+      });
+    }
+
+    // Sequentially closes specific modal(s) from the top of the stack without race conditions
+    async function closeModalChain(targetModalIds) {
+      for (const id of targetModalIds) {
+        if (STATE.modalStack[STATE.modalStack.length - 1] === id) {
+          await closeTopModal();
+        } else if (STATE.modalStack.includes(id)) {
+          const idx = STATE.modalStack.lastIndexOf(id);
+          STATE.modalStack.splice(idx, 1);
+          closeModalUI(id);
+        }
+      }
+    }
+
+    // Mobile-Back-Supported HTML Alert Popup (Replaces all browser alert() calls)
+    function showAppAlert(title, message, isWarning = false) {
+      document.getElementById('alert-title').innerText = title || 'Notice';
+      document.getElementById('alert-desc').innerText = message || '';
+      const iconWrap = document.getElementById('alert-icon-wrap');
+      if (isWarning) {
+        iconWrap.style.background = 'rgba(40,116,240,0.12)';
+        iconWrap.style.color = 'var(--primary)';
+      } else {
+        iconWrap.style.background = 'var(--danger-bg)';
+        iconWrap.style.color = 'var(--danger)';
+      }
+      openModal('dialog-alert');
     }
 
     window.addEventListener('popstate', (e) => {
@@ -666,17 +752,32 @@
       } else if (STATE.view === 'products') {
         switchView('categories');
       }
+      if (popstateWaiters.length > 0) {
+        const waiter = popstateWaiters.shift();
+        waiter();
+      }
     });
 
     document.querySelectorAll('.btn-close-modal').forEach(btn => {
       btn.addEventListener('click', () => {
         if (navigator.vibrate) navigator.vibrate(10);
-        if (STATE.modalStack.length > 0) history.back();
+        if (STATE.modalStack.length > 0) closeTopModal();
       });
     });
 
-    ui.overlay.addEventListener('click', () => { if (STATE.modalStack.length > 0) history.back(); });
-    ui.dialogOverlay.addEventListener('click', () => { if (STATE.modalStack.length > 0) history.back(); });
+    ui.overlay.addEventListener('click', () => {
+      const top = STATE.modalStack[STATE.modalStack.length - 1];
+      if (top && document.getElementById(top)?.classList.contains('bottom-sheet')) {
+        closeTopModal();
+      }
+    });
+
+    ui.dialogOverlay.addEventListener('click', () => {
+      const top = STATE.modalStack[STATE.modalStack.length - 1];
+      if (top && document.getElementById(top)?.classList.contains('dialog-box')) {
+        closeTopModal();
+      }
+    });
 
     // --- 2. Dual-State View Engine ---
     function switchView(targetView, catId = null, catName = null) {
@@ -740,6 +841,8 @@
 
     // --- 5. Fetch Categories ---
     async function loadCategories(isSwitch = false) {
+      const currentToken = ++STATE.catFetchToken;
+      STATE.isLoadingCat = true;
       ui.feed.className = 'feed-container grid-layout';
       
       // Prevent replacing 0ms DOM skeletons if this is the very first load
@@ -756,6 +859,8 @@
         }
         
         const snap = await getDocs(q);
+        if (currentToken !== STATE.catFetchToken || STATE.view !== 'categories') return;
+
         ui.feed.innerHTML = '';
         
         if (snap.empty) {
@@ -764,11 +869,16 @@
           return;
         }
 
+        const renderedCatIds = new Set();
         snap.forEach(docSnap => {
+          if (renderedCatIds.has(docSnap.id)) return;
+          renderedCatIds.add(docSnap.id);
+
           const cat = { id: docSnap.id, ...docSnap.data() };
           const resolvedCatImg = getProductImage(cat);
           const card = document.createElement('div');
           card.className = 'cat-card';
+          card.setAttribute('data-cat-id', cat.id);
           card.innerHTML = `
             <div class="cat-img-wrap">
               ${resolvedCatImg ? `<img src="${resolvedCatImg}" class="cat-img" onerror="this.style.display='none'">` : `<div class="cat-img" style="display:flex;align-items:center;justify-content:center;background:var(--skeleton-base);color:var(--text-sub);font-size:14px;font-weight:700;">No Image</div>`}
@@ -794,20 +904,25 @@
         });
 
       } catch (err) {
-        handleFirestoreError(err, ui.feed);
+        if (currentToken === STATE.catFetchToken) handleFirestoreError(err, ui.feed);
+      } finally {
+        if (currentToken === STATE.catFetchToken) STATE.isLoadingCat = false;
       }
     }
 
-    // --- 6. Fetch Products ---
+    // --- 6. Fetch Products (Protected Against Slow-Network Duplicate Rendering) ---
     async function loadProducts(isNew = true) {
+      if (!isNew && (STATE.isLoadingProd || !STATE.hasMoreProd || !STATE.lastProdDoc)) return;
+
+      const currentToken = isNew ? ++STATE.prodFetchToken : STATE.prodFetchToken;
+      STATE.isLoadingProd = true;
+
       if (isNew) {
         ui.feed.className = 'feed-container'; 
         ui.feed.innerHTML = Array(4).fill(SKELETONS.product).join('');
         STATE.lastProdDoc = null;
         STATE.hasMoreProd = true;
       }
-
-      if (!STATE.hasMoreProd) return;
 
       try {
         let q;
@@ -822,6 +937,8 @@
         }
         
         const snap = await getDocs(q);
+        // Ignore stale responses if a newer fetch started or user navigated back to categories
+        if (currentToken !== STATE.prodFetchToken || STATE.view !== 'products') return;
         
         if (isNew) ui.feed.innerHTML = '';
         
@@ -835,11 +952,15 @@
         STATE.lastProdDoc = snap.docs[snap.docs.length - 1];
 
         snap.forEach(docSnap => {
+          // Strict DOM deduplication: never render two cards with the same Firestore document ID
+          if (ui.feed.querySelector(`[data-prod-id="${docSnap.id}"]`)) return;
+
           const prod = { id: docSnap.id, ...docSnap.data() };
           const resolvedProdImg = getProductImage(prod);
           
           const card = document.createElement('div');
           card.className = 'prod-card';
+          card.setAttribute('data-prod-id', prod.id);
           
           const priceDisplay = (Number(prod.price) === 0 || !prod.price) ? '' : `₹${Number(prod.price).toLocaleString('en-IN')}`;
           
@@ -867,13 +988,15 @@
         });
 
       } catch (err) {
-        handleFirestoreError(err, ui.feed);
+        if (currentToken === STATE.prodFetchToken) handleFirestoreError(err, ui.feed);
+      } finally {
+        if (currentToken === STATE.prodFetchToken) STATE.isLoadingProd = false;
       }
     }
 
-    // Infinite Scroll
+    // Infinite Scroll (Locked while initial skeletons or page fetch is in progress)
     ui.feed.addEventListener('scroll', () => {
-      if (STATE.view === 'products' && STATE.hasMoreProd) {
+      if (STATE.view === 'products' && STATE.hasMoreProd && !STATE.isLoadingProd && STATE.lastProdDoc) {
         if (ui.feed.scrollTop + ui.feed.clientHeight >= ui.feed.scrollHeight - 100) {
           loadProducts(false);
         }
@@ -940,15 +1063,20 @@
 
     document.getElementById('btn-open-gallery').addEventListener('click', () => {
       document.getElementById('hidden-file').click();
-      history.back(); // close source sheet
+      closeModalChain(['sheet-source']);
+    });
+
+    document.getElementById('btn-cam-fallback-gallery').addEventListener('click', async () => {
+      await closeModalChain(['modal-camera']);
+      document.getElementById('hidden-file').click();
     });
 
     let videoStream = null;
     const videoEl = document.getElementById('camera-video');
 
-    document.getElementById('btn-open-camera').addEventListener('click', () => {
-      history.back(); 
-      setTimeout(startCamera, 300); 
+    document.getElementById('btn-open-camera').addEventListener('click', async () => {
+      await closeModalChain(['sheet-source']);
+      startCamera();
     });
 
     async function startCamera() {
@@ -969,15 +1097,15 @@
       }
     }
 
-    document.getElementById('btn-capture-photo').addEventListener('click', () => {
+    document.getElementById('btn-capture-photo').addEventListener('click', async () => {
       if (navigator.vibrate) navigator.vibrate(20);
       if (!videoStream) return;
       const canvas = document.createElement('canvas');
       canvas.width = videoEl.videoWidth; canvas.height = videoEl.videoHeight;
       canvas.getContext('2d').drawImage(videoEl, 0, 0, canvas.width, canvas.height);
       const base64Img = canvas.toDataURL('image/jpeg', 0.9);
-      history.back(); // close camera
-      setTimeout(() => initCropEngine(base64Img), 100); 
+      await closeModalChain(['modal-camera']);
+      initCropEngine(base64Img);
     });
 
     document.getElementById('hidden-file').addEventListener('change', (e) => {
@@ -985,7 +1113,12 @@
       if (!file) return;
       const reader = new FileReader();
       reader.readAsDataURL(file);
-      reader.onload = (event) => initCropEngine(event.target.result);
+      reader.onload = async (event) => {
+        if (STATE.modalStack.includes('sheet-source')) {
+          await closeModalChain(['sheet-source']);
+        }
+        initCropEngine(event.target.result);
+      };
       e.target.value = '';
     });
 
@@ -1031,9 +1164,9 @@
       const sliderVal = ((cropScale - minScale) / (maxScale - minScale)) * 390 + 10;
       cropZoomSlider.value = Math.max(10, Math.min(400, sliderVal));
 
-      const eps = 0.005;
-      btnCropFit.classList.toggle('active', Math.abs(cropScale - fitScale) < eps);
-      btnCropFill.classList.toggle('active', Math.abs(cropScale - coverScale) < eps);
+      const eps = Math.max(fitScale * 0.015, 0.002);
+      btnCropFit.classList.toggle('active', Math.abs(cropScale - fitScale) <= eps);
+      btnCropFill.classList.toggle('active', Math.abs(cropScale - coverScale) <= eps);
     }
 
     function centerImageAtScale(targetScale, animate = true) {
@@ -1086,15 +1219,21 @@
     function initCropEngine(base64Data) {
       const tempImg = new Image();
       tempImg.onload = () => {
+        imgOrigW = tempImg.naturalWidth || tempImg.width;
+        imgOrigH = tempImg.naturalHeight || tempImg.height;
+
         cropImgTarget.style.opacity = '0';
         cropImgTarget.style.transition = 'opacity 0.3s ease';
+        cropImgTarget.width = imgOrigW;
+        cropImgTarget.height = imgOrigH;
         cropImgTarget.src = base64Data;
 
-        openModal('modal-crop');
+        const alreadyInCrop = STATE.modalStack.includes('modal-crop');
+        if (!alreadyInCrop) {
+          openModal('modal-crop');
+        }
 
         setTimeout(() => {
-          imgOrigW = tempImg.width;
-          imgOrigH = tempImg.height;
           squareSize = cropSquare.offsetWidth;
 
           const scaleX = squareSize / imgOrigW;
@@ -1118,7 +1257,7 @@
           updateCropTransform();
           syncZoomUI();
           cropImgTarget.style.opacity = '1';
-        }, 400); 
+        }, alreadyInCrop ? 60 : 400); 
       };
       tempImg.src = base64Data;
     }
@@ -1126,6 +1265,8 @@
     function updateCropTransform() {
       const areaRect = cropArea.getBoundingClientRect();
       const sqRect = cropSquare.getBoundingClientRect();
+      squareSize = sqRect.width || cropSquare.offsetWidth;
+
       const sqLeft = sqRect.left - areaRect.left;
       const sqTop = sqRect.top - areaRect.top;
       const sqRight = sqRect.right - areaRect.left;
@@ -1134,25 +1275,14 @@
       const displayW = imgOrigW * cropScale;
       const displayH = imgOrigH * cropScale;
 
-      // Flexible bounds: let users pan any part of the image (top, bottom, or zoomed-out) anywhere inside the 1:1 background square
-      const bleedAllowance = squareSize * 0.25;
-      let minX, maxX, minY, maxY;
+      // Unified safe-pan bounds: allows top/bottom/sides to be positioned anywhere inside the 1:1 background square while keeping at least 35% of the image visible
+      const marginX = Math.min(displayW, squareSize) * 0.35;
+      const minX = sqLeft + marginX - displayW;
+      const maxX = sqRight - marginX;
 
-      if (displayW <= squareSize) {
-        minX = sqLeft - bleedAllowance;
-        maxX = sqRight - displayW + bleedAllowance;
-      } else {
-        minX = sqRight - displayW - bleedAllowance;
-        maxX = sqLeft + bleedAllowance;
-      }
-
-      if (displayH <= squareSize) {
-        minY = sqTop - bleedAllowance;
-        maxY = sqBottom - displayH + bleedAllowance;
-      } else {
-        minY = sqBottom - displayH - bleedAllowance;
-        maxY = sqTop + bleedAllowance;
-      }
+      const marginY = Math.min(displayH, squareSize) * 0.35;
+      const minY = sqTop + marginY - displayH;
+      const maxY = sqBottom - marginY;
       
       if(cropX > maxX) cropX = maxX;
       if(cropX < minX) cropX = minX;
@@ -1242,19 +1372,20 @@
     window.addEventListener('mouseup', onEnd);
     window.addEventListener('touchend', onEnd);
 
-    document.getElementById('btn-crop-confirm').addEventListener('click', () => {
+    document.getElementById('btn-crop-confirm').addEventListener('click', async () => {
       if (navigator.vibrate) navigator.vibrate(15);
       const btn = document.getElementById('btn-crop-confirm');
       btn.innerText = 'Processing...'; btn.style.pointerEvents = 'none';
 
       const sqRect = cropSquare.getBoundingClientRect();
       const areaRect = cropArea.getBoundingClientRect();
+      const curSquareSize = sqRect.width || squareSize;
       
       const sqX = sqRect.left - areaRect.left;
       const sqY = sqRect.top - areaRect.top;
       const sourceX = (sqX - cropX) / cropScale;
       const sourceY = (sqY - cropY) / cropScale;
-      const sourceSize = squareSize / cropScale;
+      const sourceSize = curSquareSize / cropScale;
       
       const canvas = document.createElement('canvas');
       canvas.width = 800; canvas.height = 800;
@@ -1272,7 +1403,7 @@
       ctx.fillRect(0, 0, 800, 800);
 
       // Step 2: Map the exact zoomed & panned image coordinates onto the 800x800 1:1 canvas
-      const canvasRatio = 800 / squareSize;
+      const canvasRatio = 800 / curSquareSize;
       const destX = (cropX - sqX) * canvasRatio;
       const destY = (cropY - sqY) * canvasRatio;
       const destW = (imgOrigW * cropScale) * canvasRatio;
@@ -1280,7 +1411,7 @@
 
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(cropImgTarget, 0, 0, imgOrigW, imgOrigH, destX, destY, destW, destH);
+      ctx.drawImage(cropImgTarget, destX, destY, destW, destH);
       
       const base64Final = canvas.toDataURL('image/jpeg', 0.9);
       STATE.tempBase64Img = base64Final;
@@ -1291,8 +1422,8 @@
         setPickerImage(document.getElementById('prod-img-picker'), document.getElementById('prod-img-preview'), base64Final);
       }
 
+      await closeModalChain(['modal-crop']);
       btn.innerText = 'Confirm'; btn.style.pointerEvents = 'auto';
-      history.back(); // close crop
     });
 
     async function uploadToImgBB(base64Data) {
@@ -1304,17 +1435,20 @@
       return data.data.url;
     }
 
-    // --- 9. Save Operations (Cat & Prod) ---
+    // --- 9. Save Operations (Cat & Prod - Mutex Locked Against Double Creation) ---
     document.getElementById('btn-save-cat').addEventListener('click', async (e) => {
+      if (STATE.isSavingCat) return;
       const name = document.getElementById('cat-name').value.trim();
       const desc = document.getElementById('cat-desc').value.trim();
-      if (!name) return alert("Catalog name required.");
+      if (!name) return showAppAlert("Name Required", "Please enter a catalog name before saving.", true);
       
-      const btn = e.target;
+      STATE.isSavingCat = true;
+      const btn = document.getElementById('btn-save-cat');
       btn.innerText = 'Saving...'; btn.style.pointerEvents = 'none';
 
       try {
-        let finalImageUrl = STATE.editContext ? getProductImage(STATE.editContext) : null;
+        const targetEditCat = STATE.editContext;
+        let finalImageUrl = targetEditCat ? getProductImage(targetEditCat) : null;
         if (STATE.tempBase64Img) finalImageUrl = await uploadToImgBB(STATE.tempBase64Img);
 
         const payload = {
@@ -1323,35 +1457,40 @@
           updatedAt: new Date().toISOString()
         };
 
-        if (STATE.editContext) {
-          await updateDoc(doc(db, "categories", STATE.editContext.id), payload);
+        if (targetEditCat && targetEditCat.id) {
+          await updateDoc(doc(db, "categories", targetEditCat.id), payload);
         } else {
           payload.createdAt = new Date().toISOString();
           await addDoc(collection(db, "categories"), payload);
         }
 
-        history.back();
+        await closeModalChain(['sheet-category']);
         loadCategories(true);
       } catch (err) {
         console.error(err);
-        alert("Failed to save.");
+        showAppAlert("Save Failed", "Could not save the catalog. Please check your internet connection and try again.");
+      } finally {
+        btn.innerText = 'Save Catalog'; btn.style.pointerEvents = 'auto';
+        STATE.isSavingCat = false;
       }
-      btn.innerText = 'Save Catalog'; btn.style.pointerEvents = 'auto';
     });
 
     document.getElementById('btn-save-prod').addEventListener('click', async (e) => {
+      if (STATE.isSavingProd) return;
       const name = document.getElementById('prod-name').value.trim();
       const price = Number(document.getElementById('prod-price').value) || 0;
       const brand = document.getElementById('prod-brand').value.trim();
       const code = document.getElementById('prod-code').value.trim();
       const desc = document.getElementById('prod-desc').value.trim();
-      if (!name) return alert("Product name required.");
+      if (!name) return showAppAlert("Name Required", "Please enter a product name before saving.", true);
       
-      const btn = e.target;
+      STATE.isSavingProd = true;
+      const btn = document.getElementById('btn-save-prod');
       btn.innerText = 'Saving...'; btn.style.pointerEvents = 'none';
 
       try {
-        let finalImageUrl = STATE.editContext ? getProductImage(STATE.editContext) : null;
+        const targetEditProd = STATE.editContext;
+        let finalImageUrl = targetEditProd ? getProductImage(targetEditProd) : null;
         if (STATE.tempBase64Img) finalImageUrl = await uploadToImgBB(STATE.tempBase64Img);
 
         const payload = {
@@ -1361,22 +1500,24 @@
           updatedAt: new Date().toISOString()
         };
 
-        if (STATE.editContext) {
-          await updateDoc(doc(db, "products", STATE.editContext.id), payload);
-          STATE.editContext = { ...STATE.editContext, ...payload };
+        if (targetEditProd && targetEditProd.id) {
+          await updateDoc(doc(db, "products", targetEditProd.id), payload);
+          STATE.editContext = { ...targetEditProd, ...payload };
           populateProductDetailUI(STATE.editContext);
         } else {
           payload.createdAt = new Date().toISOString();
           await addDoc(collection(db, "products"), payload);
         }
 
-        history.back(); // close form sheet cleanly
+        await closeModalChain(['sheet-product']);
         loadProducts(true);
       } catch (err) {
         console.error(err);
-        alert("Failed to save product.");
+        showAppAlert("Save Failed", "Could not save the product. Please check your internet connection and try again.");
+      } finally {
+        btn.innerText = 'Save Product'; btn.style.pointerEvents = 'auto';
+        STATE.isSavingProd = false;
       }
-      btn.innerText = 'Save Product'; btn.style.pointerEvents = 'auto';
     });
 
     // --- 10. Product Detail & Zoom ---
@@ -1430,40 +1571,48 @@
 
     document.getElementById('pd-btn-edit').addEventListener('click', () => openProductForm(STATE.editContext));
 
-    // --- 11. Master Deletion Engine (Batch + Modals) ---
+    // --- 11. Master Deletion Engine (Snapshot-Locked + Nested Stack Safe) ---
     let pendingDeleteMode = null; 
+    let pendingDeleteId = null;
 
     document.getElementById('btn-req-delete-cat').addEventListener('click', () => {
+      if (!STATE.editContext || !STATE.editContext.id) return;
       pendingDeleteMode = 'cat';
+      pendingDeleteId = STATE.editContext.id;
       document.getElementById('dialog-title').innerText = "Delete Catalog?";
       document.getElementById('dialog-desc').innerText = "This will permanently delete this catalog AND all products inside it.";
       openModal('dialog-confirm');
     });
 
     document.getElementById('pd-btn-delete').addEventListener('click', () => {
+      if (!STATE.editContext || !STATE.editContext.id) return;
       pendingDeleteMode = 'prod';
+      pendingDeleteId = STATE.editContext.id;
       document.getElementById('dialog-title').innerText = "Delete Product?";
       document.getElementById('dialog-desc').innerText = "This action cannot be undone.";
       openModal('dialog-confirm');
     });
 
     document.getElementById('btn-confirm-execute').addEventListener('click', async (e) => {
+      if (STATE.isDeleting || !pendingDeleteMode || !pendingDeleteId) return;
       if (navigator.vibrate) navigator.vibrate(20);
-      const btn = e.target;
+
+      STATE.isDeleting = true;
+      const targetMode = pendingDeleteMode;
+      const targetId = pendingDeleteId;
+
+      const btn = document.getElementById('btn-confirm-execute');
       btn.innerText = 'Deleting...'; btn.style.pointerEvents = 'none';
 
       try {
-        if (pendingDeleteMode === 'prod') {
-          await deleteDoc(doc(db, "products", STATE.editContext.id));
-          history.back(); // close confirm
-          setTimeout(() => {
-            if (STATE.modalStack.includes('modal-product-detail')) history.back();
-          }, 60);
+        if (targetMode === 'prod') {
+          await deleteDoc(doc(db, "products", targetId));
+          await closeModalChain(['dialog-confirm', 'modal-product-detail']);
           loadProducts(true);
         } 
-        else if (pendingDeleteMode === 'cat') {
+        else if (targetMode === 'cat') {
           // Robust Batch 450 deletion algorithm
-          const q = query(collection(db, "products"), where("categoryId", "==", STATE.editContext.id));
+          const q = query(collection(db, "products"), where("categoryId", "==", targetId));
           const snap = await getDocs(q);
           
           let batches = [];
@@ -1480,27 +1629,34 @@
             }
           });
           
-          currentBatch.delete(doc(db, "categories", STATE.editContext.id));
+          currentBatch.delete(doc(db, "categories", targetId));
           batches.push(currentBatch);
 
           for (let b of batches) await b.commit();
 
-          history.back(); // close confirm
-          setTimeout(() => {
-            if (STATE.modalStack.includes('sheet-category')) history.back();
-          }, 60);
+          await closeModalChain(['dialog-confirm', 'sheet-category']);
           loadCategories(true);
         }
+        pendingDeleteMode = null;
+        pendingDeleteId = null;
       } catch (err) {
         console.error(err);
-        alert("Delete failed.");
+        await closeModalChain(['dialog-confirm']);
+        showAppAlert("Delete Failed", "Could not complete deletion. Please check your connection and try again.");
+      } finally {
+        btn.innerText = 'Delete'; btn.style.pointerEvents = 'auto';
+        STATE.isDeleting = false;
       }
-
-      btn.innerText = 'Delete'; btn.style.pointerEvents = 'auto';
     });
 
     // Boot
-    onAuthStateChanged(auth, (user) => { if (user) loadCategories(); });
+    let hasBooted = false;
+    onAuthStateChanged(auth, (user) => {
+      if (user && !hasBooted) {
+        hasBooted = true;
+        loadCategories();
+      }
+    });
   </script>
 </body>
 </html>
