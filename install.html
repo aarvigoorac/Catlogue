@@ -519,10 +519,22 @@
       showUIState('install');
     }
 
-    // PWA Prompt Capture
+    // PWA Prompt Capture & Stale Cache Lie-Detector
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
+
+      // LIE DETECTOR: If Chrome fires this event, the app is definitely NOT currently installed.
+      // If our local storage incorrectly says it is, wipe the false flag.
+      if (localStorage.getItem('aarvi_pwa_installed') === 'true') {
+        localStorage.removeItem('aarvi_pwa_installed');
+      }
+
+      // Automatically correct the UI back to the 'install' screen if it was stuck on 'installed'
+      // (Unless they are currently watching the 45s progress animation)
+      if (!isStandalone && isGenuineChrome && !isAnimatingInstall) {
+        showUIState('install');
+      }
     });
 
     window.addEventListener('appinstalled', () => {
