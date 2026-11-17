@@ -1,4 +1,4 @@
-const CACHE_NAME = 'aarvi-stores-v6';
+const CACHE_NAME = 'aarvi-stores-v7';
 
 // All the core shell files and views required for offline/instant loading
 const APP_SHELL = [
